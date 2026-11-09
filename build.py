@@ -7,6 +7,7 @@ Cartelle di content/: projects, research, publications, news, courses, pages, pe
 Un file con `format: html` nell'intestazione ha il corpo già in HTML (contenuti importati da WordPress).
 """
 import html
+import os
 import re
 import shutil
 import sys
@@ -37,6 +38,7 @@ SECTIONS = {
 }
 HOME_LIST = ("news", "publications")  # elenchi mostrati nella home, con questo numero di voci
 HOME_COUNT = 6
+SITE_BASE = os.environ.get("SITE_BASE", "").rstrip("/")  # es. /geolab-site; vuoto se il sito sta alla radice del dominio
 ARCHIVE_BEFORE = "2025-01-01"  # le news precedenti vanno nella pagina "News archive"
 
 missing_media = set()
@@ -175,6 +177,9 @@ def load(folder):
 
 
 def write(rel, content):
+    # Con un dominio proprio il sito sta alla radice (SITE_BASE vuoto); su gherardochirici.github.io/geolab-site serve il prefisso.
+    if SITE_BASE:
+        content = re.sub(r'(href|src)="/(?!/)', rf'\1="{SITE_BASE}/', content)
     target = OUT / rel
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text(content, encoding="utf-8")
