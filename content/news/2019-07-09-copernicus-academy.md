@@ -2,6 +2,7 @@
 title: Copernicus Academy membership
 date: 2019-07-09
 format: html
+source: wordpress
 categories: Awards, News
 image: /media/2019/07/aw.png
 ---

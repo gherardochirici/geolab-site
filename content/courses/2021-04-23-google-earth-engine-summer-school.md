@@ -2,6 +2,7 @@
 title: Google Earth Engine Summer School
 date: 2021-04-23
 format: html
+source: wordpress
 categories: Event, Masters and Courses, News
 image: /media/2021/04/Google-Earth-Engine.png
 ---

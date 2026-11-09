@@ -2,6 +2,7 @@
 title: Our activities on TV - Rai SuperQuark
 date: 2019-08-28
 format: html
+source: wordpress
 categories: Awards, Event, News, Video
 image: /media/2020/05/news-1.png
 ---

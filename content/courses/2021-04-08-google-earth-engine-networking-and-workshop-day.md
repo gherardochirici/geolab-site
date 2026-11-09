@@ -2,6 +2,7 @@
 title: Google Earth Engine - networking and workshop day
 date: 2021-04-08
 format: html
+source: wordpress
 categories: Event, Masters and Courses
 image: /media/2021/04/GEE_08042021.png
 ---

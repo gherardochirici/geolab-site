@@ -12,7 +12,13 @@ import xml.etree.ElementTree as ET
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT / "tools"))
+from langcheck import italian_ratio  # noqa: E402
+
 CONTENT = ROOT / "content"
+# Tradotti a mano in inglese (source: wordpress-translated): l'importazione non li sovrascrive.
+TRANSLATED = {"life-escapos", "pfit-toscana", "noos-geolab", "new-project-go-surf-supporto-decisionale-alla-pianificazione"}
+ITALIAN_THRESHOLD = 0.6  # oltre questa quota il contenuto riceve `lang: it` e resta fuori dal sito (solo inglese)
 NS = {
     "wp": "http://wordpress.org/export/1.2/",
     "content": "http://purl.org/rss/1.0/modules/content/",
@@ -90,8 +96,14 @@ def main(xml_path):
             m = UPLOADS.match(url)
             attachments[text(it, "wp:post_id")] = media_path(m.group(1)) if m else url
 
+    # Cancella le importazioni precedenti (marcate `source: wordpress`): non tocca i file scritti o tradotti a mano.
+    for old in CONTENT.rglob("*.md"):
+        head = old.read_text(encoding="utf-8").split("---", 2)[1] if old.read_text(encoding="utf-8").startswith("---") else ""
+        if re.search(r"^source: wordpress$", head, re.M):
+            old.unlink()
+
     needed = set()
-    written = skipped = 0
+    written = skipped = flagged = 0
     counts = {}
     for it in items:
         kind = text(it, "wp:post_type")
@@ -100,7 +112,7 @@ def main(xml_path):
         title = html.unescape(text(it, "title")).strip()
         slug = text(it, "wp:post_name")
         slug_short = slug[:60].rstrip("-")  # evita percorsi troppo lunghi su Windows e Dropbox
-        if slug in SKIP_SLUGS or title in SKIP_TITLES or not title or title == "None":
+        if slug in SKIP_SLUGS or slug_short in TRANSLATED or title in SKIP_TITLES or not title or title == "None":
             skipped += 1
             continue
         cats = [c.text for c in it.findall("category") if c.get("domain") == "category"]
@@ -124,8 +136,12 @@ def main(xml_path):
             f"title: {title}",
             f"date: {date}",
             "format: html",
+            "source: wordpress",
             f"categories: {', '.join(c for c in cats if c)}",
         ]
+        if italian_ratio(title + " " + body) >= ITALIAN_THRESHOLD:
+            head.append("lang: it")
+            flagged += 1
         if thumb:
             head.append(f"image: {thumb}")
         head.append("---")
@@ -142,6 +158,7 @@ def main(xml_path):
     (ROOT / "tools").mkdir(exist_ok=True)
     (ROOT / "tools" / "media_needed.txt").write_text("\n".join(sorted(needed)) + "\n", encoding="utf-8")
     print(f"Scritti {written} file, saltati {skipped}. Per cartella: {counts}")
+    print(f"In italiano, esclusi dal sito (lang: it): {flagged}")
     print(f"File multimediali citati: {len(needed)} (elenco in tools/media_needed.txt)")
 
 

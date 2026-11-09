@@ -2,6 +2,7 @@
 title: Scientific Writing & Publishing
 date: 2019-11-14
 format: html
+source: wordpress
 categories: Didactics, Event
 image: /media/2019/10/dida.png
 ---

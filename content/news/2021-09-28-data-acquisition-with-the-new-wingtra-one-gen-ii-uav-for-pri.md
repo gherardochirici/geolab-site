@@ -2,6 +2,7 @@
 title: Data acquisition with the New WINGTRA-ONE GEN II UAV for PRI.FOR.MAN Project
 date: 2021-09-28
 format: html
+source: wordpress
 categories: Beautiful images, News, Projects
 image: /media/2021/09/WhatsApp-Image-2021-09-09-at-17.50.44.jpeg
 ---

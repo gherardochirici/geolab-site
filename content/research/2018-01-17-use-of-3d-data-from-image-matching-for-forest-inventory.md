@@ -2,6 +2,7 @@
 title: Use of 3D data from image matching for forest inventory
 date: 2018-01-17
 format: html
+source: wordpress
 categories: Research Field
 image: /media/2021/04/img-20160218-wa00088491482987720510722.jpg
 ---

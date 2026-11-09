@@ -2,6 +2,7 @@
 title: European Forest Types: toward an automated classification
 date: 2018-01-17
 format: html
+source: wordpress
 categories: Publications
 image: /media/2018/01/aw-13.png
 ---

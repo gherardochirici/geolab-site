@@ -2,6 +2,7 @@
 title: New Master - Geographic information Systems for land management and monitoring
 date: 2018-01-18
 format: html
+source: wordpress
 categories: Masters and Courses
 image: /media/2018/01/aw-3.png
 ---

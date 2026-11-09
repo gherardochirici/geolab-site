@@ -2,6 +2,7 @@
 title: Forest fires monitoring in South America
 date: 2019-08-23
 format: html
+source: wordpress
 categories: News
 image: /media/2020/12/news.png
 ---

@@ -2,6 +2,7 @@
 title: GEDI and Sentinel data integration for quantifying agroforestry tree height and stocks
 date: 2026-01-15
 format: html
+source: wordpress
 categories: Publications
 image: /media/2025/10/4.png
 ---

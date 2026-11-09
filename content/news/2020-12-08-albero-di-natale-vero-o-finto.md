@@ -2,7 +2,9 @@
 title: Albero di Natale vero o finto?
 date: 2020-12-08
 format: html
+source: wordpress
 categories: News, Video
+lang: it
 image: /media/2020/12/news.png
 ---
 

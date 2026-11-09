@@ -2,6 +2,7 @@
 title: 7th March 2018 International Seminar on Forest Inventory and Remote Sensing
 date: 2018-03-06
 format: html
+source: wordpress
 categories: Event, Masters and Courses
 image: /media/2021/04/20151113_145401-scaled.jpg
 ---

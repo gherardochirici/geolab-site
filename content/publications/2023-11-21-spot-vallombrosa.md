@@ -2,6 +2,7 @@
 title: SPOT: robotics for forest assessment
 date: 2023-11-21
 format: html
+source: wordpress
 categories: Publications, Research Field
 image: /media/2023/11/20231115093542626.jpg
 ---

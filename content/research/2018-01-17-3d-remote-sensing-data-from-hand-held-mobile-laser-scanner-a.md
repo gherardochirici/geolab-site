@@ -2,6 +2,7 @@
 title: 3D Remote Sensing to quantify soils disturbance caused by forest operation
 date: 2018-01-17
 format: html
+source: wordpress
 categories: Research Field
 image: /media/2021/04/locandina_3dic_unifi_featured.png
 ---

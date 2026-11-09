@@ -2,6 +2,7 @@
 title: New Paper: Use of the new hyperspectral satellite PRISMA on spectral separability for forest type mapping contrasting
 date: 2021-03-09
 format: html
+source: wordpress
 categories: Publications, Uncategorized
 image: /media/2021/03/paper-2-1.png
 ---

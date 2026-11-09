@@ -2,7 +2,9 @@
 title: COPERNICUS @ UNIFI
 date: 2020-05-28
 format: html
+source: wordpress
 categories: Event, Video
+lang: it
 image: /media/2020/05/news-1.png
 ---
 

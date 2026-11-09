@@ -2,6 +2,7 @@
 title: New Paper: is it possible to map in real-time forest disturbances?
 date: 2021-01-25
 format: html
+source: wordpress
 categories: Publications, Research Field
 image: /media/2021/01/aw-8.png
 ---

@@ -2,6 +2,7 @@
 title: CALL FOR PROOFS OF CONCEPT
 date: 2018-10-04
 format: html
+source: wordpress
 categories: Awards
 image: /media/2019/07/aw.png
 ---

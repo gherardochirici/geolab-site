@@ -2,7 +2,9 @@
 title: Convegno Nazionale sul Verde Terapeutico
 date: 2025-11-06
 format: html
+source: wordpress
 categories: Event
+lang: it
 image: /media/2025/10/Convegno-Nazionale-sul-Verde-Terapeutico-1.png
 ---
 

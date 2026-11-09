@@ -2,6 +2,7 @@
 title: Estimated 41.000 hectares of damage forests by VAIA storm in Italy
 date: 2018-12-28
 format: html
+source: wordpress
 categories: News, Publications
 image: /media/2021/04/20170607_121610-scaled.jpg
 ---

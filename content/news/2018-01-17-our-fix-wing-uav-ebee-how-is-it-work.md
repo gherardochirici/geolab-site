@@ -2,6 +2,7 @@
 title: Our Fix wing UAV eBee - How does it work? a FreshLIFE Video
 date: 2018-01-17
 format: html
+source: wordpress
 categories: Video
 image: /media/2018/01/Our-Fix-wing-UAV-eBee.png
 ---

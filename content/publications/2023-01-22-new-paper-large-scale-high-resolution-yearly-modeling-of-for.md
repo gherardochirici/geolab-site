@@ -2,6 +2,7 @@
 title: New paper: Large-scale high-resolution yearly modeling of forest growing stock volume and above-ground carbon pool
 date: 2023-01-22
 format: html
+source: wordpress
 categories: Publications
 image: /media/2023/01/PP_volume_italia_english.png
 ---

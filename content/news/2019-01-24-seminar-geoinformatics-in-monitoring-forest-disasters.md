@@ -2,6 +2,7 @@
 title: Seminar: Geoinformatics in monitoring forest disasters
 date: 2019-01-24
 format: html
+source: wordpress
 categories: Event
 image: /media/2019/01/conf_piotr.jpg
 ---

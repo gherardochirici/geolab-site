@@ -2,6 +2,7 @@
 title: Picture of the day - Sentinel 2
 date: 2022-08-19
 format: html
+source: wordpress
 categories: Beautiful images, Picture of the day
 image: /media/2022/08/19_08_2022_rio_gallegos_cile-1.png
 ---

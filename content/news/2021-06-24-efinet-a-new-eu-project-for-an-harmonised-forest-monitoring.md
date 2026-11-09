@@ -2,6 +2,7 @@
 title: EFINET, a new EU project for an Harmonised Forest Monitoring System
 date: 2021-06-24
 format: html
+source: wordpress
 categories: News, Projects, Video
 image: /media/2021/06/E4oqjEUXIAMLkiT.jpg
 ---

@@ -2,7 +2,9 @@
 title: Nuovo report FAO sulle foreste - RAI TG Leonardo
 date: 2020-05-19
 format: html
+source: wordpress
 categories: Event, Video
+lang: it
 image: /media/2020/12/news.png
 ---
 

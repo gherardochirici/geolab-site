@@ -2,6 +2,7 @@
 title: Satellite Remote Sensing for Monitoring Cork Oak Woodlands—A Comprehensive Literature Review
 date: 2026-01-19
 format: html
+source: wordpress
 categories: Publications
 image: /media/2025/10/2.png
 ---

@@ -2,6 +2,7 @@
 title: People
 date: 2018-01-16
 format: html
+source: wordpress
 categories: 
 ---
 

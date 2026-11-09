@@ -8,7 +8,6 @@
 /media/2019/01/whatsapp-image-2019-01-22-at-16.24.53.jpeg
 /media/2019/02/slide.jpg
 /media/2019/02/summer-school-information.jpg
-/media/2019/03/21marzo2019_unifi-1.png
 /media/2019/04/iforest.png
 /media/2019/07/425911-land-surface_temperature_from_copernicus_sentinel-3_node_full_image_2.png
 /media/2019/08/65180430_2831696046872861_234941948111093760_o.jpg
@@ -102,7 +101,6 @@
 /media/2020/11/20191210_160150.jpg
 /media/2020/11/20200612_111632.jpg
 /media/2020/11/20200612_132527.jpg
-/media/2020/12/prof-chirici-albero-natale-vero-o-finto.mp3
 /media/2021/01/borghi_pic_geolab-2.jpg
 /media/2021/01/planet_geolab.jpg
 /media/2021/01/ttm.png
@@ -113,6 +111,4 @@
 /media/2021/04/20170508_142943-scaled.jpg
 /media/2021/04/20170519_104954-scaled.jpg
 /media/2023/11/WhatsApp-Video-2023-11-21-at-11.49.53-1.mp4
-/media/2024/03/Locandina_libro_silvomuseo-_def.jpg
-/media/2024/10/pianetaTerra_vid.mp4
 /media/2025/02/Noos_vallombrosa_480.mp4

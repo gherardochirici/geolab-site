@@ -2,6 +2,7 @@
 title: National Forest Inventory in Italy: new perspectives for forest monitoring
 date: 2025-10-27
 format: html
+source: wordpress
 categories: Publications
 image: /media/2025/10/3.png
 ---

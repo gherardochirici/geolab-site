@@ -2,6 +2,7 @@
 title: Our history in pictures
 date: 2020-11-29
 format: html
+source: wordpress
 categories: 
 ---
 

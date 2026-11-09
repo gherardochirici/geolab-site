@@ -2,7 +2,9 @@
 title: Città del Futuro. Sistema vivente capillare, rete neurale di sistemi biologici verdi e tecnologie dinamiche resilienti
 date: 2023-12-21
 format: html
+source: wordpress
 categories: Didactics, Event, News
+lang: it
 image: /media/2023/12/WhatsApp-Image-2023-12-21-at-09.41.00.jpeg
 ---
 

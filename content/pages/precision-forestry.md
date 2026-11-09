@@ -2,6 +2,7 @@
 title: Precision Forestry
 date: 2018-09-28
 format: html
+source: wordpress
 categories: 
 ---
 

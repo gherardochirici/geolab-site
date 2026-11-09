@@ -2,6 +2,7 @@
 title: Summer School: COPERNICUS Sentinels Remote sensing techniques in forestry
 date: 2019-02-12
 format: html
+source: wordpress
 categories: Event
 image: /media/2020/05/news-1.png
 ---

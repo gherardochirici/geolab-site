@@ -2,7 +2,9 @@
 title: Il patrimonio forestale italiano come capitale naturale
 date: 2021-09-09
 format: html
+source: wordpress
 categories: Event
+lang: it
 image: /media/2021/09/acc_geo.png
 ---
 

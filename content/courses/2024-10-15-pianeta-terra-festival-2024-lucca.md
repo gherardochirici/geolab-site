@@ -2,7 +2,9 @@
 title: Pianeta Terra Festival 2024 - Lucca
 date: 2024-10-15
 format: html
+source: wordpress
 categories: Didactics, Event
+lang: it
 image: /media/2024/10/Progetto-senza-titolo-49.png
 ---
 

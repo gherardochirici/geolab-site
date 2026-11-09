@@ -2,6 +2,7 @@
 title: Big data and evaluation of cultural ecosystem services: an analysis based on geotagged photographs from social media in Tuscan forest (Italy)
 date: 2019-04-09
 format: html
+source: wordpress
 categories: Publications
 image: /media/2019/04/aw-9.png
 ---

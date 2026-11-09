@@ -2,6 +2,7 @@
 title: New paper - Forest windthrows map of Europe
 date: 2020-01-23
 format: html
+source: wordpress
 categories: Event, News, Projects, Publications
 image: /media/2020/01/Immagine-2021-04-26-121849.png
 ---

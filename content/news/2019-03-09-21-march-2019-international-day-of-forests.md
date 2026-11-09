@@ -2,7 +2,9 @@
 title: 21 March 2019 - International Day of Forests
 date: 2019-03-09
 format: html
+source: wordpress
 categories: Event
+lang: it
 image: /media/2020/05/news-1.png
 ---
 

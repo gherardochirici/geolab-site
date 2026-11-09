@@ -2,6 +2,7 @@
 title: LIFE SySTEMIC
 date: 2024-12-09
 format: html
+source: wordpress
 categories: Projects
 image: /media/2024/11/images.png
 ---

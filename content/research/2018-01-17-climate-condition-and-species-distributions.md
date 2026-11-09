@@ -2,6 +2,7 @@
 title: Climate Condition and Species distributions
 date: 2018-01-17
 format: html
+source: wordpress
 categories: Research Field
 image: /media/2021/04/20150428_202015-scaled.jpg
 ---

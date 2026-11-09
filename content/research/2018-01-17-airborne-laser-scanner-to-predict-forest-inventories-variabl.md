@@ -2,6 +2,7 @@
 title: Airborne Laser Scanner to predict forest inventories variables, to map forest structure, and to quantify forest natural and human disturbances
 date: 2018-01-17
 format: html
+source: wordpress
 categories: Research Field
 image: /media/2021/04/senza-titolo.png
 ---

@@ -2,6 +2,7 @@
 title: Winter School
 date: 2021-09-25
 format: html
+source: wordpress
 categories: Didactics, Event, Masters and Courses
 image: /media/2021/09/Immagine-2021-09-25-230633.png
 ---

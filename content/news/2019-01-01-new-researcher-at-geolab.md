@@ -2,6 +2,7 @@
 title: New researcher at geoLAB
 date: 2019-01-01
 format: html
+source: wordpress
 categories: Personnel
 image: /media/2019/01/cocozza.jpg
 ---

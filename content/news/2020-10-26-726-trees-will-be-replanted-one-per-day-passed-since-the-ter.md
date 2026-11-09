@@ -2,6 +2,7 @@
 title: 726 TREES WILL BE REPLANTED, ONE PER DAY PASSED SINCE THE TERRIBLE STORM THAT HIT ITALIAN DOLOMITES IN 2018.
 date: 2020-10-26
 format: html
+source: wordpress
 categories: Event
 image: /media/2020/10/Cattura.png
 ---

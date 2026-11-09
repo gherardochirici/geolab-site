@@ -2,6 +2,7 @@
 title: Assessing forest windthrow damage using single-date, post-event airborne laser scanning data
 date: 2018-01-18
 format: html
+source: wordpress
 categories: Publications
 image: /media/2020/01/Immagine-2021-04-26-121849.png
 ---

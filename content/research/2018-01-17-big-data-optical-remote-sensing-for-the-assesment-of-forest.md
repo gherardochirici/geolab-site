@@ -2,6 +2,7 @@
 title: Big Data: optical remote-sensing for the assesment of forest inventory variables, and forest disturbances
 date: 2018-01-17
 format: html
+source: wordpress
 categories: Research Field
 image: /media/2021/04/webbanner.png
 ---

@@ -2,6 +2,7 @@
 title: A climate-sensitive forest model for assessing impacts of forest management in Europe
 date: 2019-03-02
 format: html
+source: wordpress
 categories: Publications
 image: /media/2019/03/aw-10.png
 ---

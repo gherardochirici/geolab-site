@@ -2,7 +2,9 @@
 title: IL SILVOMUSEO DI VALLOMBROSA
 date: 2024-03-19
 format: html
+source: wordpress
 categories: Event
+lang: it
 image: /media/2024/03/Via_Ghibellina_Reggello_Vallombrosa_01-scaled-e1710864310125.jpg
 ---
 

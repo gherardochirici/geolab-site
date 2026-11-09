@@ -2,6 +2,7 @@
 title: Advancements in Forest Monitoring: Applications and Perspectives of Airborne Laser Scanning and Complementarity with Satellite Optical Data
 date: 2025-11-24
 format: html
+source: wordpress
 categories: Publications
 image: /media/2025/10/1.png
 ---

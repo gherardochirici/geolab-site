@@ -2,6 +2,7 @@
 title: Are NFIs ready for ecosystem services assessment?
 date: 2019-05-22
 format: html
+source: wordpress
 categories: Event
 image: /media/2020/12/news.png
 ---

@@ -2,6 +2,7 @@
 title: Two new papers on estimation of soils displacement caused by Forest Operations using close range SfM Photogrammetry
 date: 2018-03-06
 format: html
+source: wordpress
 categories: Publications
 image: /media/2021/04/20150915_113618-scaled.jpg
 ---

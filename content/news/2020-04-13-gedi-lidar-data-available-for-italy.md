@@ -2,6 +2,7 @@
 title: GEDI LiDAR data available for Italy
 date: 2020-04-13
 format: html
+source: wordpress
 categories: News, Projects, Video
 image: /media/2020/12/news.png
 ---

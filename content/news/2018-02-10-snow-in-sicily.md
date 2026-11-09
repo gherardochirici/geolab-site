@@ -2,6 +2,7 @@
 title: Snow in Sicily
 date: 2018-02-10
 format: html
+source: wordpress
 categories: Beautiful images
 image: /media/2018/02/aw-2.png
 ---

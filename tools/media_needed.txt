@@ -41,8 +41,6 @@
 2019/08/65180430_2831696046872861_234941948111093760_o.jpg
 2019/08/senza-titolo.png
 2019/08/superquark-20191169318744156258741.jpg
-2019/09/go_surf.jpg
-2019/09/proj.png
 2019/10/20190603_1454304219859638919889246.jpg
 2019/10/dida.png
 2019/10/img-20160218-wa00088491482987720510722.jpg
@@ -239,14 +237,7 @@
 2024/10/image-2.png
 2024/10/image.png
 2024/10/pianetaTerra_vid.mp4
-2024/11/PFIT-1.png
-2024/11/PFIT.png
-2024/11/forest-patches-through-gis.png
 2024/11/images.png
-2025/01/escapos_sito.png
-2025/01/escapos_sito_partner.png
-2025/01/noos-l_avventura-della-conoscenza-e4lo.png
-2025/02/Noos_vallombrosa_480.mp4
 2025/02/YT_logo_FSAT.png
 2025/06/NFI_damico.png
 2025/06/image.png

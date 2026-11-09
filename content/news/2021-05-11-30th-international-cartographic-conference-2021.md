@@ -2,7 +2,9 @@
 title: 30th International Cartographic Conference 2021
 date: 2021-05-11
 format: html
+source: wordpress
 categories: Event
+lang: it
 image: /media/2020/05/news-1.png
 ---
 

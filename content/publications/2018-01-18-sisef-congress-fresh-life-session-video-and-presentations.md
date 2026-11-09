@@ -2,6 +2,7 @@
 title: SISEF congress Fresh Life Session, video and presentations
 date: 2018-01-18
 format: html
+source: wordpress
 categories: Publications, Video
 image: /media/2018/01/aw.png
 ---

@@ -2,6 +2,7 @@
 title: FORWARDS Poster presentation at ESA Living Planet Symposium
 date: 2025-06-30
 format: html
+source: wordpress
 categories: Event, Personnel, Projects
 image: /media/2025/02/YT_logo_FSAT.png
 ---

@@ -2,6 +2,7 @@
 title: New Paper: The Effect of Forest Mask Quality in the Wall-to-Wall Estimation of Growing Stock Volume
 date: 2021-03-29
 format: html
+source: wordpress
 categories: Publications
 image: /media/2021/03/aw-5.png
 ---

@@ -2,6 +2,7 @@
 title: New paper: A New Method for Automated Clearcut Disturbance Detection in Mediterranean Coppice using Landsat Time series
 date: 2021-01-31
 format: html
+source: wordpress
 categories: Publications, Research Field
 image: /media/2021/01/aw-7.png
 ---

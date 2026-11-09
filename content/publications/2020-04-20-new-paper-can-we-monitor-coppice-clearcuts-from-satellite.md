@@ -2,6 +2,7 @@
 title: New paper - Can we monitor coppice clearcuts from Satellite?
 date: 2020-04-20
 format: html
+source: wordpress
 categories: Publications, Research Field
 image: /media/2020/04/Immagine-2021-04-26-121442.png
 ---

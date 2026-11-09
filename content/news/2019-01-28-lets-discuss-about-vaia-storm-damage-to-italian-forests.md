@@ -2,6 +2,7 @@
 title: Let's discuss about VAIA storm damage to Italian forests
 date: 2019-01-28
 format: html
+source: wordpress
 categories: Event
 image: /media/2021/04/20171219_142355-scaled.jpg
 ---

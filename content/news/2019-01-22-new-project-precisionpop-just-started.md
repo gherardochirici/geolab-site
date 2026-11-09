@@ -2,6 +2,7 @@
 title: New project PRECISIONPOP just started!
 date: 2019-01-22
 format: html
+source: wordpress
 categories: Event, News, Projects
 image: /media/2019/01/aw-11.png
 ---

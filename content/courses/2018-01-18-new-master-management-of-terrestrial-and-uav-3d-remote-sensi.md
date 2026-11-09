@@ -2,6 +2,7 @@
 title: New Master - Management of Terrestrial and UAV 3D Remote Sensing Data
 date: 2018-01-18
 format: html
+source: wordpress
 categories: Masters and Courses
 image: /media/2019/10/dida.png
 ---

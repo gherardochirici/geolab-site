@@ -2,7 +2,9 @@
 title: Se cercate un albero di natale sostenibile acquistatene uno vero - Intervista a Controradio Firenze del Prof. Chirici
 date: 2020-12-04
 format: html
+source: wordpress
 categories: News
+lang: it
 image: /media/2020/12/news.png
 ---
 

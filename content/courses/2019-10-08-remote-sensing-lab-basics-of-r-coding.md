@@ -2,6 +2,7 @@
 title: Remote sensing lab: basics of R coding
 date: 2019-10-08
 format: html
+source: wordpress
 categories: Didactics, Masters and Courses
 image: /media/2019/10/dida.png
 ---

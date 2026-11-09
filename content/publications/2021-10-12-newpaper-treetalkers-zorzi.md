@@ -2,6 +2,7 @@
 title: New paper: The TreeTalkersCheck R package: An automatic daily routine to check physiological traits of trees in the forest
 date: 2021-10-12
 format: html
+source: wordpress
 categories: Publications
 image: /media/2021/10/FAhErtdXMAUgxIK.jpg
 ---

@@ -2,6 +2,7 @@
 title: The fall of giants - Rai3 Presa Diretta
 date: 2019-01-15
 format: html
+source: wordpress
 categories: News, Video
 image: /media/2019/01/aw-1.png
 ---

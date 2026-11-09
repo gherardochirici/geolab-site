@@ -9,9 +9,12 @@ Un file con `format: html` nell'intestazione ha il corpo già in HTML (contenuti
 import html
 import re
 import shutil
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).parent
+sys.path.insert(0, str(ROOT / "tools"))
+from langcheck import italian_ratio  # noqa: E402  (il sito è solo in inglese)
 CONTENT = ROOT / "content"
 STATIC = ROOT / "static"
 OUT = ROOT / "docs"  # cartella servita da GitHub Pages
@@ -149,10 +152,20 @@ def funding_box(meta):
     return f'<aside class="funding{todo}">{emblem}<p>{html.escape(text)}</p></aside>'
 
 
+excluded_italian = []
+suspect_italian = []
+
+
 def load(folder):
     items = []
     for path in sorted((CONTENT / folder).glob("*.md")):
         meta, body = parse(path)
+        # Il sito è solo in inglese: `lang: it` nell'intestazione toglie il contenuto dal sito (finché non è tradotto).
+        if meta.get("lang") == "it":
+            excluded_italian.append(path.name)
+            continue
+        if italian_ratio(meta.get("title", "") + " " + body) >= 0.5:
+            suspect_italian.append(f"{folder}/{path.name}")
         meta["slug"] = path.stem
         meta["folder"] = folder
         meta.setdefault("date", path.stem[:10] if re.match(r"\d{4}-\d{2}-\d{2}", path.stem) else "")
@@ -286,6 +299,12 @@ def build():
 
     total = sum(len(v) for v in data.values())
     print(f"Sito costruito in {OUT} ({total} contenuti: " + ", ".join(f"{k} {len(v)}" for k, v in data.items()) + ")")
+    if excluded_italian:
+        print(f"Esclusi dal sito perché in italiano (lang: it): {len(excluded_italian)}")
+    if suspect_italian:
+        print("ATTENZIONE, testo che sembra italiano e non è escluso (il sito è solo in inglese):")
+        for name in suspect_italian:
+            print("  ", name)
     if missing_media:
         (ROOT / "tools" / "media_missing.txt").write_text("\n".join(sorted(missing_media)) + "\n", encoding="utf-8")
         print(f"Attenzione: {len(missing_media)} immagini citate non sono in docs/media/ (elenco in tools/media_missing.txt)")

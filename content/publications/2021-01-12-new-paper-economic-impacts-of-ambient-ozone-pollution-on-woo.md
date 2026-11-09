@@ -2,6 +2,7 @@
 title: New paper: Economic impacts of ambient ozone pollution on wood production in Italy
 date: 2021-01-12
 format: html
+source: wordpress
 categories: Publications, Research Field
 image: /media/2021/01/Immagine-2021-04-26-121140.png
 ---

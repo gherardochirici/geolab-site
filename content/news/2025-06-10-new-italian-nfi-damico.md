@@ -2,6 +2,7 @@
 title: The new Italian Forest Inventory
 date: 2025-06-10
 format: html
+source: wordpress
 categories: News, Projects, Research Field
 image: /media/2025/06/NFI_damico.png
 ---

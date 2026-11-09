@@ -2,6 +2,7 @@
 title: Windthrow damage - Radio24
 date: 2018-11-28
 format: html
+source: wordpress
 categories: Event, Video
 image: /media/2020/05/news-1.png
 ---
