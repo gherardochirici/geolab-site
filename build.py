@@ -75,11 +75,12 @@ def page(title, body, description=""):
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{html.escape(title)}</title>
 {desc}
+<link rel="icon" type="image/png" href="/img/logo/favicon-64.png">
 <link rel="stylesheet" href="/css/site.css">
 </head>
 <body>
 <header class="top">
-  <a class="brand" href="/"><span class="brand-name">{SITE['name']}</span><span class="brand-tag">{SITE['tagline']}</span></a>
+  <a class="brand" href="/"><img src="/img/logo/geolab-logo.png" alt="{SITE['name']}"><span class="brand-tag">{SITE['tagline']}</span></a>
   <nav aria-label="Main">
     <a href="/#projects">Projects</a>
     <a href="/#news">News</a>
@@ -92,6 +93,7 @@ def page(title, body, description=""):
 {body}
 </main>
 <footer class="foot" id="contact">
+  <img class="foot-logo" src="/img/logo/geolab-logo-full.png" alt="{SITE['name']}, {SITE['tagline']}">
   <div>
     <strong>{SITE['name']}, {SITE['tagline']}</strong><br>
     {SITE['affiliation']}<br>
@@ -184,6 +186,7 @@ def build():
   <div id="publications"><h2>Publications</h2><ul class="list">{pubs_html}</ul></div>
   <div id="people"><h2>People</h2><ul class="list">{people_html}</ul></div>
 </section>
+<div class="pattern"><img src="/img/logo/geolab-pattern.webp" alt=""></div>
 """
     write("index.html", page(f"{SITE['name']}, {SITE['tagline']}", home, SITE["affiliation"]))
 
