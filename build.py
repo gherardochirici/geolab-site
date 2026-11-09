@@ -277,7 +277,7 @@ def build():
         for meta, body in data[folder]:
             kicker = SECTIONS.get(folder, "").rstrip("s") or ""
             date = meta.get("date", "")
-            kicker_text = ", ".join(x for x in (kicker, date if folder != "projects" else meta.get("year", "")) if x)
+            kicker_text = ", ".join(x for x in (kicker, "" if folder == "pages" else (date if folder != "projects" else meta.get("year", ""))) if x)
             logo = f'<img class="project-logo" src="{meta["logo"]}" alt="{html.escape(meta["title"])} logo">' if meta.get("logo") else ""
             image = ""
             if folder == "news" and meta.get("image") and exists(meta["image"]):
