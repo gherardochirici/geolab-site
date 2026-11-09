@@ -2,6 +2,9 @@
 
 Uso: python build.py
 Nessuna dipendenza esterna (solo libreria standard).
+
+Cartelle di content/: projects, research, publications, news, courses, pages, people (+ about.md).
+Un file con `format: html` nell'intestazione ha il corpo già in HTML (contenuti importati da WordPress).
 """
 import html
 import re
@@ -20,6 +23,19 @@ SITE = {
     "facebook": "https://www.facebook.com/geolab.unifi.it",
     "address": "via San Bonaventura 13, 50145 Florence, Italy",
 }
+
+# Sezioni con pagina elenco: cartella -> (titolo, ordine nel menu)
+SECTIONS = {
+    "projects": "Projects",
+    "research": "Research",
+    "publications": "Publications",
+    "news": "News",
+    "courses": "Courses",
+}
+HOME_LIST = ("news", "publications")  # elenchi mostrati nella home, con questo numero di voci
+HOME_COUNT = 6
+
+missing_media = set()
 
 
 def parse(path):
@@ -66,8 +82,18 @@ def markdown(body):
     return "\n".join(out)
 
 
-def page(title, body, description=""):
+def render_body(meta, body):
+    if meta.get("format") == "html":
+        for src in re.findall(r'src="(/media/[^"]+)"', body):
+            if not (STATIC / src.lstrip("/")).exists():
+                missing_media.add(src)
+        return body
+    return markdown(body)
+
+
+def page(title, body, description="", nav_extra=""):
     desc = f'<meta name="description" content="{html.escape(description)}">' if description else ""
+    nav = "".join(f'<a href="/{key}/">{label}</a>' for key, label in SECTIONS.items())
     return f"""<!doctype html>
 <html lang="en">
 <head>
@@ -82,10 +108,8 @@ def page(title, body, description=""):
 <header class="top">
   <a class="brand" href="/"><img src="/img/logo/geolab-logo.png" alt="{SITE['name']}"><span class="brand-tag">{SITE['tagline']}</span></a>
   <nav aria-label="Main">
-    <a href="/#projects">Projects</a>
-    <a href="/#news">News</a>
-    <a href="/#publications">Publications</a>
-    <a href="/#people">People</a>
+    {nav}
+    <a href="/pages/people/">People</a>
     <a href="/#contact">Contact</a>
   </nav>
 </header>
@@ -102,6 +126,7 @@ def page(title, body, description=""):
   <div>
     <a href="{SITE['facebook']}">Facebook</a>
   </div>
+  {nav_extra}
 </footer>
 </body>
 </html>
@@ -122,6 +147,9 @@ def load(folder):
     for path in sorted((CONTENT / folder).glob("*.md")):
         meta, body = parse(path)
         meta["slug"] = path.stem
+        meta["folder"] = folder
+        meta.setdefault("date", path.stem[:10] if re.match(r"\d{4}-\d{2}-\d{2}", path.stem) else "")
+        meta.setdefault("year", meta["date"][:4])
         items.append((meta, body))
     return items
 
@@ -130,6 +158,29 @@ def write(rel, content):
     target = OUT / rel
     target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text(content, encoding="utf-8")
+
+
+def tile(meta):
+    image = meta.get("logo") or meta.get("image")
+    if image and image.startswith("/media/") and not (STATIC / image.lstrip("/")).exists():
+        image = ""
+    art = f'<img src="{image}" alt="" loading="lazy">' if image else f'<span class="tile-text">{html.escape(meta["title"])}</span>'
+    return (
+        f'<a class="tile" href="/{meta["folder"]}/{meta["slug"]}/">'
+        f'<span class="tile-art">{art}</span>'
+        f'<span class="tile-title">{html.escape(meta["title"])}</span>'
+        f'<span class="tile-year">{meta.get("year", "")}</span></a>\n'
+    )
+
+
+def list_items(items, limit=None):
+    rows = ""
+    for meta, _ in items[:limit]:
+        rows += (
+            f'<li><a href="/{meta["folder"]}/{meta["slug"]}/">{html.escape(meta["title"])}</a>'
+            f'<span class="muted">{meta.get("date", "")}</span></li>'
+        )
+    return f'<ul class="list">{rows}</ul>'
 
 
 def build():
@@ -142,82 +193,82 @@ def build():
                 pass
     shutil.copytree(STATIC, OUT, dirs_exist_ok=True)
 
-    projects = sorted(load("projects"), key=lambda p: p[0].get("year", ""), reverse=True)
-    news = sorted(load("news"), key=lambda n: n[0].get("date", ""), reverse=True)
-    pubs = sorted(load("publications"), key=lambda n: n[0].get("date", ""), reverse=True)
-    people = load("people")
+    data = {name: sorted(load(name), key=lambda p: (p[0].get("date") or p[0].get("year", ""), p[0]["title"]), reverse=True)
+            for name in list(SECTIONS) + ["pages", "people"]}
+    # I progetti si ordinano per anno di inizio.
+    data["projects"].sort(key=lambda p: p[0].get("year", ""), reverse=True)
     _, about = parse(CONTENT / "about.md")
     intro = [markdown(chunk) for chunk in about.split("\n\n---\n\n")]
 
-    tiles = ""
-    for meta, _ in projects:
-        logo = meta.get("logo")
-        art = f'<img src="{logo}" alt="">' if logo else f'<span class="tile-text">{html.escape(meta["title"])}</span>'
-        tiles += (
-            f'<a class="tile" href="/projects/{meta["slug"]}/">'
-            f'<span class="tile-art">{art}</span>'
-            f'<span class="tile-title">{html.escape(meta["title"])}</span>'
-            f'<span class="tile-year">{meta.get("year", "")}</span></a>\n'
-        )
-
-    news_html = "".join(
-        f'<li><a href="/news/{m["slug"]}/">{html.escape(m["title"])}</a><span class="muted">{m["date"]}</span></li>'
-        for m, _ in news
-    )
-    pubs_html = "".join(
-        f'<li>{html.escape(m["title"])}<span class="muted">{m["date"][:4]}</span></li>' for m, _ in pubs
-    )
     people_html = "".join(
         f'<li><strong>{html.escape(m["title"])}</strong><span class="muted">{html.escape(m.get("role", ""))}</span></li>'
-        for m, _ in people
+        for m, _ in data["people"]
     )
+    pages_nav = "".join(
+        f'<a href="/pages/{m["slug"]}/">{html.escape(m["title"])}</a>' for m, _ in sorted(data["pages"], key=lambda p: p[0]["title"])
+    )
+    pages_nav = f'<nav class="foot-pages" aria-label="More pages">{pages_nav}</nav>' if pages_nav else ""
 
+    def wrap(title, body, description=""):
+        return page(title, body, description, pages_nav)
+
+    home_lists = "".join(
+        f'<div id="{name}"><h2><a href="/{name}/">{SECTIONS[name]}</a></h2>{list_items(data[name], HOME_COUNT)}</div>'
+        for name in HOME_LIST
+    )
     home = f"""
 <section class="intro">
   <p class="lead-tag">Forests, remote sensing and geomatics for monitoring and management.</p>
   <div class="cols">{''.join(f'<div>{c}</div>' for c in intro)}</div>
 </section>
 <section id="projects">
-  <h2>Projects</h2>
-  <div class="tiles">{tiles}</div>
+  <h2><a href="/projects/">Projects</a></h2>
+  <div class="tiles">{''.join(tile(m) for m, _ in data['projects'])}</div>
 </section>
 <section class="three">
-  <div id="news"><h2>News</h2><ul class="list">{news_html}</ul></div>
-  <div id="publications"><h2>Publications</h2><ul class="list">{pubs_html}</ul></div>
+  {home_lists}
   <div id="people"><h2>People</h2><ul class="list">{people_html}</ul></div>
 </section>
 <div class="pattern"><img src="/img/logo/geolab-pattern.webp" alt=""></div>
 """
-    write("index.html", page(f"{SITE['name']}, {SITE['tagline']}", home, SITE["affiliation"]))
+    write("index.html", wrap(f"{SITE['name']}, {SITE['tagline']}", home, SITE["affiliation"]))
 
-    for meta, body in projects:
-        logo = f'<img class="project-logo" src="{meta["logo"]}" alt="{html.escape(meta["title"])} logo">' if meta.get("logo") else ""
-        link = f'<p><a href="{meta["website"]}">Project website</a></p>' if meta.get("website") else ""
-        html_body = f"""
+    for name, label in SECTIONS.items():
+        if name == "projects":
+            body = f'<section><h1 class="section-title">{label}</h1><div class="tiles">{"".join(tile(m) for m, _ in data[name])}</div></section>'
+        else:
+            body = f'<section><h1 class="section-title">{label}</h1>{list_items(data[name])}</section>'
+        write(f"{name}/index.html", wrap(f"{label} | {SITE['name']}", body))
+
+    for folder in list(SECTIONS) + ["pages"]:
+        for meta, body in data[folder]:
+            kicker = SECTIONS.get(folder, "").rstrip("s") or ""
+            date = meta.get("date", "")
+            kicker_text = ", ".join(x for x in (kicker, date if folder != "projects" else meta.get("year", "")) if x)
+            logo = f'<img class="project-logo" src="{meta["logo"]}" alt="{html.escape(meta["title"])} logo">' if meta.get("logo") else ""
+            image = ""
+            if folder == "news" and meta.get("image") and (STATIC / meta["image"].lstrip("/")).exists():
+                image = f'<figure class="hero"><img src="{meta["image"]}" alt="{html.escape(meta.get("alt", ""))}"></figure>'
+            sub = f'<p class="sub">{html.escape(meta["subtitle"])}</p>' if meta.get("subtitle") else ""
+            link = f'<p><a href="{meta["website"]}">Project website</a></p>' if meta.get("website") else ""
+            html_body = f"""
 <article class="single">
-  <p class="kicker">Project, {meta.get('year', '')}</p>
+  <p class="kicker">{html.escape(kicker_text)}</p>
   <h1>{html.escape(meta['title'])}</h1>
-  <p class="sub">{html.escape(meta.get('subtitle', ''))}</p>
+  {sub}
   {logo}
-  {markdown(body)}
+  {image}
+  {render_body(meta, body)}
   {link}
   {funding_box(meta)}
 </article>"""
-        write(f"projects/{meta['slug']}/index.html", page(f"{meta['title']} | {SITE['name']}", html_body, meta.get("subtitle", "")))
+            write(f"{folder}/{meta['slug']}/index.html", wrap(f"{meta['title']} | {SITE['name']}", html_body, meta.get("subtitle", "")))
 
-    for meta, body in news:
-        image = f'<figure class="hero"><img src="{meta["image"]}" alt="{html.escape(meta.get("alt", ""))}"></figure>' if meta.get("image") else ""
-        html_body = f"""
-<article class="single">
-  <p class="kicker">News, {meta['date']}</p>
-  <h1>{html.escape(meta['title'])}</h1>
-  {image}
-  {markdown(body)}
-  {funding_box(meta)}
-</article>"""
-        write(f"news/{meta['slug']}/index.html", page(f"{meta['title']} | {SITE['name']}", html_body))
-
-    print(f"Sito costruito in {OUT} ({len(projects)} progetti, {len(news)} news)")
+    total = sum(len(v) for v in data.values())
+    print(f"Sito costruito in {OUT} ({total} contenuti: " + ", ".join(f"{k} {len(v)}" for k, v in data.items()) + ")")
+    if missing_media:
+        (ROOT / "tools" / "media_missing.txt").write_text("\n".join(sorted(missing_media)) + "\n", encoding="utf-8")
+        print(f"Attenzione: {len(missing_media)} immagini citate non sono in static/media/ (elenco in tools/media_missing.txt)")
 
 
 if __name__ == "__main__":

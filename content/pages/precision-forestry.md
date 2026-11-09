@@ -1,0 +1,40 @@
+---
+title: Precision Forestry
+date: 2018-09-28
+format: html
+categories: 
+---
+
+Precision Forestry uses high technology sensing and analytical tools to support site-specific, economic, environmental, and sustainable decision-making for the forestry sector supporting the forestry value chain from bare land to the customer buying a sheet of paper or board” (IUFRO, 2015, 2014). In fact, thanks to modern technologies it is possible to conduct silvicultural operations in a cost-effective manner. Precision forestry can be draw as a chain that uses data, tools, and information to take better decisions.
+
+In this regards Remote Sensing (RS) technologies, providing high-quality geospatial information about forests, are considered crucial to improving highly repeatable measurements, actions, and processes in precision forestry.
+
+ 
+
+What we are doing?
+<ul>
+ 	<li><b>IMPROVE DATA ACQUISITION OF FOREST ECOSYSTEMS USING DIFFERENT REMOTE SENSING SENSORS AND PLATFORMS</b></li>
+ 	<li><b>DEVELOP NEW METHODS TO ESTIMATE FOREST VARIABLES </b></li>
+ 	<li><b>DEVELOP NEW DECISION SUPPORT SYSTEM AT DIFFERENT SPATIAL SCALES TO SUPPORT SUSTAINIBLE FOREST MANAGEMENT</b></li>
+</ul>
+ 
+
+<em><strong>Related project</strong></em>
+<ul>
+ 	<li>PRI-FOR.MAN  <a href="https://www.dagri.unifi.it/p750.html" target="_blank" rel="noopener"><img class="alignnone " src="https://cdn3.iconfinder.com/data/icons/glypho-computers-andother-tech/64/globe-www-512.png" width="36" height="36" />Project web-site</a></li>
+ 	<li>GO-SURF</li>
+ 	<li>B-FOREST <a href="https://www.bforest.it/" target="_blank" rel="noopener"><img class="alignnone " src="https://cdn3.iconfinder.com/data/icons/glypho-computers-andother-tech/64/globe-www-512.png" width="36" height="36" />Project web-site</a></li>
+ 	<li>PRECISIONPOP <a href="https://precisionpop.net/" target="_blank" rel="noopener"><img class="alignnone " src="https://cdn3.iconfinder.com/data/icons/glypho-computers-andother-tech/64/globe-www-512.png" width="36" height="36" />Project web Site</a></li>
+ 	<li>FRESh LIFE  <a href="http://freshlifeproject.net/" target="_blank" rel="noopener"><img class="alignnone " src="https://cdn3.iconfinder.com/data/icons/glypho-computers-andother-tech/64/globe-www-512.png" width="36" height="36" />Project web Site</a></li>
+</ul>
+ 
+
+<em><strong>Publications</strong></em>
+<ul>
+ 	<li>Giannetti, F., Puliti, S., Puletti, N., Travaglini, D., and Chirici, G. 2020. Modelling Forest structural indices in mixed temperate forests: comparison of UAV photogrammetric DTM-independent variables and ALS variables. Ecol. Indic. <b>117</b>(May): 106513. Elsevier. doi:10.1016/j.ecolind.2020.106513.</li>
+ 	<li>Perugia, B. Del, Giannetti, F., Chirici, G., and Travaglini, D. 2019. Influence of Scan Density on the Estimation of Single-Tree Attributes by Hand-Held Mobile Laser Scanning. (i): 1–13. doi:10.3390/f10030277.</li>
+ 	<li>Barzagli, A., Nocentini, S., Del Perugia, B., Travaglini, D., Giannetti, F., Zolli, C., Carrara, S., Nerli, M., Rossi, P., Barbati, A., Ferrari, B., Tomao, A., Lasserre, B., Santopuoli, G., Marchetti, M., Balsi, M., and Chirici, G. 2018. L’utilizzo del telerilevamento a supporto della gestione forestale sostenibile. Primi risultati del progetto Fresh Life Demonstrating Remote Sensing Integration in Sustainable Forest Management (Life14_ENV/IT/000414). L’Italia For. E Mont. <b>73</b>: 169–194. doi:10.4129/ifm.2018.4.5.03.</li>
+ 	<li>Giannetti, F., Chirici, G., Gobakken, T., Næsset, E., Travaglini, D., and Puliti, S. 2018. A new approach with DTM-independent metrics for forest growing stock prediction using UAV photogrammetric data. Remote Sens. Environ. <b>213</b>(June 2017): 195–205. Elsevier. doi:10.1016/j.rse.2018.05.016.</li>
+ 	<li>Bagaram, M.B., Giuliarelli, D., Chirici, G., Giannetti, F., and Barbati, A. 2018. UAV remote sensing for biodiversity monitoring : are forest canopy gaps good covariates ? Remote Sens. (July): 1–29. doi:10.3390/rs10091397.</li>
+ 	<li>Giannetti, F., Puletti, N., Quatrini, V., Travaglini, D., Bottalico, F., Corona, P., and Chirici, G. 2017. Integrating terrestrial and airborne laser scanning for the assessment of single tree attributes in Mediterranean forest stands. submitted <b>51</b>(1): 795–807. Taylor &amp; Francis. doi:10.1080/22797254.2018.1482733.</li>
+</ul>

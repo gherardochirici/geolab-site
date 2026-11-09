@@ -1,0 +1,36 @@
+---
+title: Big Data: optical remote-sensing for the assesment of forest inventory variables, and forest disturbances
+date: 2018-01-17
+format: html
+categories: Research Field
+image: /media/2021/04/webbanner.png
+---
+
+Good estimates of forest inventory variables such as biomass, volume, species composition and human and natural disturbance are relevant in mapping, monitoring and manage forest ecosystem.
+
+The use of images acquired by space borne sensors (e.g. Landsat, Sentinel, Quickbird) are considered essential to map  forest inventory variables and forest disturbance caused by human or by nature over large area.
+
+Our laboratory is involved in development new methodologies to map forest inventory variables over large areas using as field reference national and local forest inventories plots.
+
+The GeoLAB working group are currently work on exploring:
+<ul>
+	<li>the capabilities of new multi-spectral satellite images (e.g. Sentinel-2) to predict forest inventories variables;</li>
+	<li>the capabilities of the integration of field forest inventories plot and satellite images to map growing stock volume over large area in Meditterrenan forest</li>
+</ul>
+Morover, we are testing and developing new authomatic procedure to map, with multi-temporal  apporch, human and natural forest disturbance using Big optical remote sensing data t(e.g. Landsat series).
+
+The GeoLAB working group are currently work on:
+<ul>
+	<li>Mapping human disturbance in Tuscany and Italian Forests using optical remote sensing big data</li>
+</ul>
+ 
+<h2><em><strong>Paper</strong></em></h2>
+<ul>
+	<li>Matteo Mura, Francesca Bottalico, Francesca Giannetti, Remo Bertani, Raffaello Giannini, Marco Mancini, Simone Orlandini, Davide Travaglini, Gherardo Chirici (2018). Exploiting the capabilities of the Sentinel-2 multi spectral instrument for predicting growing stock volume in forest ecosystems. International Journal of Applied Earth Observation and Geoinformation 66:126-134, <a href="https">doi:https</a><a href="https://doi.org/10.1016/j.jag.2017.11.013">://doi.org/10.1016/j.jag.2017.11.013</a></li>
+	<li>Luca, Bernasconi; Gherardo, Chirici; Marco Marchetti (2017). Biomass Estimation of Xerophytic Forests Using Visible Aerial Imagery: Contrasting Single-Tree and Area-Based Approaches. REMOTE SENSING, vol. 9, pp. 1-12, ISSN:2072-4292 <a href="http://dx.doi.org/10.3390/RS9040334" target="_blank" rel="noopener"><i>DOI </i> http://dx.doi.org/10.3390/RS9040334</a> <i></i></li>
+</ul>
+<h2><em><strong>Master Thesis</strong></em></h2>
+Erika Mazza (2017). Monitoring of forest ecosystems disturbances through multitemporal optical remote sensing.
+<strong><em>Supervisor:</em> </strong>Gherardo Chirici and Raffaele Pegna
+<a title="abstract_mazza" href="/media/2018/01/abstract_mazza.pdf" target="_blank" rel="noopener">English Abstrac Available on-line</a>
+<a title="tesi_mazza" href="/media/2018/01/tesi_mazza.pdf" target="_blank" rel="noopener">Italian Full Text Available on-line</a>
