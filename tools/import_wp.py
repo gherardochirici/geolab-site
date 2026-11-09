@@ -16,8 +16,8 @@ sys.path.insert(0, str(ROOT / "tools"))
 from langcheck import italian_ratio  # noqa: E402
 
 CONTENT = ROOT / "content"
-# Tradotti a mano in inglese (source: wordpress-translated): l'importazione non li sovrascrive.
-TRANSLATED = {"life-escapos", "pfit-toscana", "noos-geolab", "new-project-go-surf-supporto-decisionale-alla-pianificazione"}
+# Tradotti o modificati a mano (source: wordpress-translated / wordpress-edited): l'importazione non li sovrascrive.
+TRANSLATED = {"life-escapos", "pfit-toscana", "noos-geolab", "new-project-go-surf-supporto-decisionale-alla-pianificazione", "people"}
 ITALIAN_THRESHOLD = 0.6  # oltre questa quota il contenuto riceve `lang: it` e resta fuori dal sito (solo inglese)
 NS = {
     "wp": "http://wordpress.org/export/1.2/",

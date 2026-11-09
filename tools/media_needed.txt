@@ -1,4 +1,3 @@
-2018/01/1024px-28at29.svg_.png
 2018/01/Immagine-2021-04-26-123609.png
 2018/01/Our-Fix-wing-UAV-eBee.png
 2018/01/abstract_mazza.pdf
@@ -6,16 +5,13 @@
 2018/01/aw-3.png
 2018/01/aw.png
 2018/01/damico-abstract.pdf
-2018/01/francesca_giannetti.jpg
 2018/01/grotti_abstract.pdf
 2018/01/tesi_grotti.pdf
 2018/01/tesi_mazza.pdf
 2018/02/aw-2.png
 2018/02/img_20180210_015057970242872.jpg
-2018/04/pr2.jpg
 2018/10/poc.jpg
 2018/11/forest-716699_1920.jpg
-2018/11/giovannidamico.jpg
 2018/12/aw-1.png
 2018/12/radiografia.jpg
 2018/12/rlab-radiografia-di-un-albero.pdf
@@ -38,7 +34,6 @@
 2019/05/chirici_100nfi_nibio-1.pdf
 2019/07/425911-land-surface_temperature_from_copernicus_sentinel-3_node_full_image_2.png
 2019/07/aw.png
-2019/08/65180430_2831696046872861_234941948111093760_o.jpg
 2019/08/senza-titolo.png
 2019/08/superquark-20191169318744156258741.jpg
 2019/10/20190603_1454304219859638919889246.jpg
@@ -49,15 +44,9 @@
 2019/11/locandina_3dic_unifi.png
 2020/01/Immagine-2021-04-26-121849.png
 2020/01/cattura.png
-2020/02/susanna_nocentini.jpg
-2020/02/travaglini-davide.jpg
 2020/04/Immagine-2021-04-26-121442.png
-2020/04/elia.jpg
 2020/05/esec_a3-copernicus_19giugno.png
 2020/05/news-1.png
-2020/09/win_20200803_12_53_04_pro.jpg
-2020/10/100668503_10157598578241795_8514615545826377728_o.jpg
-2020/10/21149980_1894137067504995_5783759357487476066_n.jpg
 2020/10/Cattura.png
 2020/10/foto-prodotto.jpeg
 2020/10/vaia-cube.jpg
@@ -139,7 +128,6 @@
 2021/01/Immagine-2021-04-26-121140.png
 2021/01/aw-7.png
 2021/01/aw-8.png
-2021/01/borghi_pic_geolab-2.jpg
 2021/01/planet_geolab.jpg
 2021/01/ttm.png
 2021/03/aw-5.png
