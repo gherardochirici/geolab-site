@@ -34,6 +34,7 @@ SECTIONS = {
 }
 HOME_LIST = ("news", "publications")  # elenchi mostrati nella home, con questo numero di voci
 HOME_COUNT = 6
+ARCHIVE_BEFORE = "2025-01-01"  # le news precedenti vanno nella pagina "News archive"
 
 missing_media = set()
 
@@ -82,10 +83,16 @@ def markdown(body):
     return "\n".join(out)
 
 
+def exists(src):
+    """Il file citato c'è? Le immagini della libreria vivono in docs/media (non si cancellano a ogni build)."""
+    rel = src.lstrip("/")
+    return (OUT / rel).exists() or (STATIC / rel).exists()
+
+
 def render_body(meta, body):
     if meta.get("format") == "html":
         for src in re.findall(r'src="(/media/[^"]+)"', body):
-            if not (STATIC / src.lstrip("/")).exists():
+            if not exists(src):
                 missing_media.add(src)
         return body
     return markdown(body)
@@ -162,7 +169,7 @@ def write(rel, content):
 
 def tile(meta):
     image = meta.get("logo") or meta.get("image")
-    if image and image.startswith("/media/") and not (STATIC / image.lstrip("/")).exists():
+    if image and image.startswith("/media/") and not exists(image):
         image = ""
     art = f'<img src="{image}" alt="" loading="lazy">' if image else f'<span class="tile-text">{html.escape(meta["title"])}</span>'
     return (
@@ -187,11 +194,13 @@ def build():
     # Svuota docs/ file per file: una cartella tenuta aperta da Dropbox o dall'anteprima non deve bloccare la build.
     if OUT.exists():
         for path in sorted(OUT.rglob("*"), reverse=True):
+            if (OUT / "media") in path.parents or path == OUT / "media":
+                continue  # la libreria immagini resta: è la sola copia nel repository
             try:
                 path.unlink() if path.is_file() else path.rmdir()
             except OSError:
                 pass
-    shutil.copytree(STATIC, OUT, dirs_exist_ok=True)
+    shutil.copytree(STATIC, OUT, dirs_exist_ok=True, ignore=shutil.ignore_patterns("media"))
 
     data = {name: sorted(load(name), key=lambda p: (p[0].get("date") or p[0].get("year", ""), p[0]["title"]), reverse=True)
             for name in list(SECTIONS) + ["pages", "people"]}
@@ -212,8 +221,12 @@ def build():
     def wrap(title, body, description=""):
         return page(title, body, description, pages_nav)
 
+    recent_news = [n for n in data["news"] if n[0].get("date", "") >= ARCHIVE_BEFORE]
+    archive_news = [n for n in data["news"] if n[0].get("date", "") < ARCHIVE_BEFORE]
+    shown = {name: (recent_news if name == "news" else data[name]) for name in SECTIONS}
+
     home_lists = "".join(
-        f'<div id="{name}"><h2><a href="/{name}/">{SECTIONS[name]}</a></h2>{list_items(data[name], HOME_COUNT)}</div>'
+        f'<div id="{name}"><h2><a href="/{name}/">{SECTIONS[name]}</a></h2>{list_items(shown[name], HOME_COUNT)}</div>'
         for name in HOME_LIST
     )
     home = f"""
@@ -236,9 +249,16 @@ def build():
     for name, label in SECTIONS.items():
         if name == "projects":
             body = f'<section><h1 class="section-title">{label}</h1><div class="tiles">{"".join(tile(m) for m, _ in data[name])}</div></section>'
+        elif name == "news":
+            more = f'<p class="more"><a href="/news/archive/">News archive: {len(archive_news)} items before {ARCHIVE_BEFORE[:4]}</a></p>' if archive_news else ""
+            body = f'<section><h1 class="section-title">{label}</h1>{list_items(shown[name])}{more}</section>'
         else:
             body = f'<section><h1 class="section-title">{label}</h1>{list_items(data[name])}</section>'
         write(f"{name}/index.html", wrap(f"{label} | {SITE['name']}", body))
+    if archive_news:
+        body = (f'<section><h1 class="section-title">News archive</h1><p class="sub">News published before {ARCHIVE_BEFORE[:4]}. '
+                f'<a href="/news/">Back to recent news</a></p>{list_items(archive_news)}</section>')
+        write("news/archive/index.html", wrap(f"News archive | {SITE['name']}", body))
 
     for folder in list(SECTIONS) + ["pages"]:
         for meta, body in data[folder]:
@@ -247,7 +267,7 @@ def build():
             kicker_text = ", ".join(x for x in (kicker, date if folder != "projects" else meta.get("year", "")) if x)
             logo = f'<img class="project-logo" src="{meta["logo"]}" alt="{html.escape(meta["title"])} logo">' if meta.get("logo") else ""
             image = ""
-            if folder == "news" and meta.get("image") and (STATIC / meta["image"].lstrip("/")).exists():
+            if folder == "news" and meta.get("image") and exists(meta["image"]):
                 image = f'<figure class="hero"><img src="{meta["image"]}" alt="{html.escape(meta.get("alt", ""))}"></figure>'
             sub = f'<p class="sub">{html.escape(meta["subtitle"])}</p>' if meta.get("subtitle") else ""
             link = f'<p><a href="{meta["website"]}">Project website</a></p>' if meta.get("website") else ""
@@ -268,7 +288,7 @@ def build():
     print(f"Sito costruito in {OUT} ({total} contenuti: " + ", ".join(f"{k} {len(v)}" for k, v in data.items()) + ")")
     if missing_media:
         (ROOT / "tools" / "media_missing.txt").write_text("\n".join(sorted(missing_media)) + "\n", encoding="utf-8")
-        print(f"Attenzione: {len(missing_media)} immagini citate non sono in static/media/ (elenco in tools/media_missing.txt)")
+        print(f"Attenzione: {len(missing_media)} immagini citate non sono in docs/media/ (elenco in tools/media_missing.txt)")
 
 
 if __name__ == "__main__":

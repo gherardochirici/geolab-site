@@ -20,7 +20,7 @@ NS = {
 }
 
 # Pagine e articoli scritti a mano nel nuovo sito, o che non servono più.
-SKIP_SLUGS = {"monifun", "forwards", "forwards-project", "home", "projects", "project", "about-us", "contact", "contact-2", "sample-page", "privacy-policy"}
+SKIP_SLUGS = {"monifun", "forwards", "forwards-project", "home", "projects", "project", "about-us", "contact", "contact-2", "sample-page", "privacy-policy", "francesca_giannetti"}
 SKIP_TITLES = {"Merry Christmas", "Merry Christmas and happy New Year!"}
 
 COLLECTION_BY_CATEGORY = [  # in ordine di priorità
@@ -73,6 +73,8 @@ def clean(body, attachments, needed):
         return local
 
     body = UPLOADS.sub(rewrite, body)
+    # Nel vecchio sito la chiocciola degli indirizzi email era un'immagine (anti-spam): diventa testo "(at)", accessibile.
+    body = re.sub(r"<img[^>]*at29\.svg[^>]*>", "(at)", body)
     body = body.replace("\xa0", " ").replace("&nbsp;", " ")
     return body.strip()
 
