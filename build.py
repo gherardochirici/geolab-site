@@ -7,6 +7,7 @@ Cartelle di content/: projects, research, publications, news, courses, pages, pe
 Un file con `format: html` nell'intestazione ha il corpo già in HTML (contenuti importati da WordPress).
 """
 import html
+import json
 import os
 import re
 import shutil
@@ -301,6 +302,26 @@ def build():
   {funding_box(meta)}
 </article>"""
             write(f"{folder}/{meta['slug']}/index.html", wrap(f"{meta['title']} | {SITE['name']}", html_body, meta.get("subtitle", "")))
+
+    # Reindirizzamenti dai vecchi indirizzi WordPress (redirects.json, prodotto da tools/import_wp.py): GitHub Pages non ha
+    # redirect del server, quindi ogni vecchio indirizzo diventa una piccola pagina che rimanda al nuovo.
+    redirects_file = ROOT / "redirects.json"
+    made = 0
+    if redirects_file.exists():
+        for old, new in json.loads(redirects_file.read_text(encoding="utf-8")).items():
+            index = OUT / old.strip("/") / "index.html"
+            if index.exists():  # non si sovrascrive una pagina vera
+                continue
+            # href e src con percorso dalla radice ricevono il prefisso in write(); nel meta refresh va messo a mano.
+            write(
+                f"{old.strip('/')}/index.html",
+                f'<!doctype html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n<title>Page moved</title>\n'
+                f'<meta name="robots" content="noindex">\n<meta http-equiv="refresh" content="0; url={SITE_BASE}{new}">\n'
+                f'<link rel="canonical" href="{new}">\n</head>\n<body>\n'
+                f'<p>This page has moved to <a href="{new}">the new address</a>.</p>\n</body>\n</html>\n',
+            )
+            made += 1
+        print(f"Reindirizzamenti creati: {made}")
 
     total = sum(len(v) for v in data.values())
     print(f"Sito costruito in {OUT} ({total} contenuti: " + ", ".join(f"{k} {len(v)}" for k, v in data.items()) + ")")

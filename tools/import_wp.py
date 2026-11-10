@@ -6,10 +6,12 @@ Bozze, contenuti privati e revisioni vengono ignorati. Gli articoli già scritti
 Le immagini restano riferimenti a /media/<anno>/<mese>/<file>: i file veri vanno copiati in static/media/ (vedi media_needed.txt).
 """
 import html
+import json
 import re
 import sys
 import xml.etree.ElementTree as ET
 from pathlib import Path
+from urllib.parse import urlparse
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "tools"))
@@ -28,6 +30,29 @@ NS = {
 # Pagine e articoli scritti a mano nel nuovo sito, o che non servono più.
 SKIP_SLUGS = {"monifun", "forwards", "forwards-project", "home", "projects", "project", "about-us", "contact", "contact-2", "sample-page", "privacy-policy", "francesca_giannetti"}
 SKIP_TITLES = {"Merry Christmas", "Merry Christmas and happy New Year!"}
+
+# Dove vanno i vecchi indirizzi delle pagine e degli articoli che non hanno un equivalente diretto.
+SKIP_TARGETS = {
+    "monifun": "/projects/monifun/",
+    "forwards": "/projects/forwards/",
+    "forwards-project": "/projects/forwards/",
+    "home": "/",
+    "projects": "/projects/",
+    "project": "/projects/",
+    "about-us": "/",
+    "contact": "/",
+    "contact-2": "/#contact",
+    "francesca_giannetti": "/pages/people/",
+}
+CATEGORY_REDIRECTS = {  # sezioni del vecchio sito (/category/...)
+    "/category/projects/": "/projects/",
+    "/category/publications/": "/publications/",
+    "/category/news/": "/news/",
+    "/category/event/": "/news/",
+    "/category/research-field/": "/research/",
+    "/category/masters-and-courses/": "/courses/",
+    "/category/didactics/": "/courses/",
+}
 
 COLLECTION_BY_CATEGORY = [  # in ordine di priorità
     ("Projects", "projects"),
@@ -105,6 +130,7 @@ def main(xml_path):
     needed = set()
     written = skipped = flagged = 0
     counts = {}
+    redirects = {}  # vecchio indirizzo WordPress -> nuovo indirizzo
     for it in items:
         kind = text(it, "wp:post_type")
         if kind not in ("post", "page") or text(it, "wp:status") != "publish":
@@ -112,9 +138,7 @@ def main(xml_path):
         title = html.unescape(text(it, "title")).strip()
         slug = text(it, "wp:post_name")
         slug_short = slug[:60].rstrip("-")  # evita percorsi troppo lunghi su Windows e Dropbox
-        if slug in SKIP_SLUGS or slug_short in TRANSLATED or title in SKIP_TITLES or not title or title == "None":
-            skipped += 1
-            continue
+        old_path = "/" + urlparse(text(it, "link")).path.strip("/") + "/"
         cats = [c.text for c in it.findall("category") if c.get("domain") == "category"]
         if kind == "page":
             collection = "pages"
@@ -124,6 +148,19 @@ def main(xml_path):
             if collection == "projects" and {"News", "Event", "Video", "Personnel"} & set(cats):
                 collection = "news"
         date = text(it, "wp:post_date")[:10]
+        stem = slug_short or "untitled"
+        if collection not in ("pages", "projects"):  # news, pubblicazioni e corsi hanno la data nell'indirizzo
+            stem = f"{date}-{stem}"
+        new_path = f"/{collection}/{stem}/"
+        if slug in SKIP_SLUGS or title in SKIP_TITLES or not title or title == "None":
+            if old_path != "/":
+                redirects[old_path] = SKIP_TARGETS.get(slug, "/")
+            skipped += 1
+            continue
+        if slug_short in TRANSLATED:
+            redirects[old_path] = new_path
+            skipped += 1
+            continue
         thumb = ""
         for meta in it.findall("wp:postmeta", NS):
             if text(meta, "wp:meta_key") == "_thumbnail_id":
@@ -142,18 +179,23 @@ def main(xml_path):
         if italian_ratio(title + " " + body) >= ITALIAN_THRESHOLD:
             head.append("lang: it")
             flagged += 1
+            # Il contenuto non è sul sito (solo inglese): il vecchio indirizzo porta all'elenco della sezione.
+            redirects[old_path] = "/news/archive/" if collection == "news" and date < "2025-01-01" else f"/{collection}/"
+        else:
+            redirects[old_path] = new_path
         if thumb:
             head.append(f"image: {thumb}")
         head.append("---")
-        # Pagine e progetti hanno indirizzi puliti (senza data); news, pubblicazioni e corsi li prefissano con la data.
-        stem = slug_short or "untitled"
-        if collection not in ("pages", "projects"):
-            stem = f"{date}-{stem}"
         target = CONTENT / collection / f"{stem}.md"
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text("\n".join(head) + "\n\n" + body + "\n", encoding="utf-8")
         counts[collection] = counts.get(collection, 0) + 1
         written += 1
+
+    # Reindirizzamenti dai vecchi indirizzi (permalink WordPress) ai nuovi, più le sezioni (categorie) del vecchio sito.
+    redirects.update(CATEGORY_REDIRECTS)
+    (ROOT / "redirects.json").write_text(json.dumps(dict(sorted(redirects.items())), indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
+    print(f"Reindirizzamenti: {len(redirects)} (redirects.json)")
 
     (ROOT / "tools").mkdir(exist_ok=True)
     (ROOT / "tools" / "media_needed.txt").write_text("\n".join(sorted(needed)) + "\n", encoding="utf-8")
