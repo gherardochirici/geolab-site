@@ -5,9 +5,10 @@ Static site of geoLAB, Laboratory of Forest Geomatics (University of Florence), 
 - `content/`: pages in Markdown (projects, news, publications, people, about)
 - `static/`: CSS and fixed images
 - `build.py`: generates the site into `docs/` (`python build.py`, standard library only)
-- `docs/`: generated site, served by GitHub Pages (only `docs/media/` is edited by hand)
+- `docs/`: generated site (git-ignored, except `docs/media/`, the image store that is edited by hand)
+- `.github/workflows/pages.yml`: GitHub Actions builds the site and publishes it on GitHub Pages at every merge into `main`
 
-The site is English only. Do not edit `docs/` by hand, except for images in `docs/media/`: change `content/` or `static/` and rebuild.
+The site is English only. Do not edit `docs/` by hand, except for images in `docs/media/`: change `content/` or `static/`.
 
 ## Contributing
 

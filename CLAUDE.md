@@ -1,6 +1,6 @@
 # Sito di geoLAB: istruzioni per Claude
 
-Questo repository contiene il sito di geoLAB, Laboratory of Forest Geomatics (Università di Firenze), online su https://geolabforest.com. È un sito statico: i testi sono file Markdown in `content/`, uno script Python (`build.py`, solo libreria standard) li trasforma in pagine nella cartella `docs/`, e GitHub Pages pubblica `docs/` dal ramo `main`.
+Questo repository contiene il sito di geoLAB, Laboratory of Forest Geomatics (Università di Firenze), online su https://geolabforest.com. È un sito statico: i testi sono file Markdown in `content/`, uno script Python (`build.py`, solo libreria standard) li trasforma in pagine nella cartella `docs/`. La build e la pubblicazione sono automatiche: a ogni unione su `main` GitHub Actions (`.github/workflows/pages.yml`) ricostruisce il sito e lo pubblica su GitHub Pages. `docs/` non è nel repository, tranne `docs/media/`.
 
 Chi ti usa è un membro del laboratorio che vuole aggiungere o aggiornare contenuti. Segui queste regole prima di toccare qualsiasi file.
 
@@ -18,7 +18,8 @@ Chi ti usa è un membro del laboratorio che vuole aggiungere o aggiornare conten
 - `content/projects/`, `content/news/`, `content/publications/`, `content/research/`, `content/courses/`, `content/pages/`, `content/people/`: un file `.md` per contenuto. `content/about.md` è il testo della home.
 - `static/`: CSS, loghi e immagini fisse del sito.
 - `docs/media/AAAA/MM/`: immagini degli articoli. È l'unica parte di `docs/` che si modifica a mano.
-- `docs/` (tutto il resto): generato da `build.py`. Non modificarlo a mano e non includerlo nei commit.
+- `docs/` (tutto il resto): generato da `build.py` sul tuo computer solo per l'anteprima (Git lo ignora). Non modificarlo a mano.
+- `.github/`: workflow di pubblicazione e file `CODEOWNERS`. Non toccarli senza chiedere a Gherardo.
 - `tools/`: script di servizio (importazione dal vecchio WordPress, compressione immagini).
 
 Ogni file ha in testa un'intestazione tra due righe `---`:
@@ -57,9 +58,9 @@ Non si scrive mai direttamente su `main`: ogni modifica passa da un ramo e da un
 1. `git pull` sul ramo `main`, poi un ramo nuovo: `git switch -c nome/argomento` (ad esempio `rossi/news-nextbon`).
 2. Modifica i file in `content/` (e `static/`, `docs/media/` se servono immagini).
 3. Anteprima: `python build.py` (deve finire senza errori e senza avvisi di testo italiano), poi `python -m http.server 8000 --directory docs` e apri http://localhost:8000. Controlla le pagine toccate. Ferma il server quando hai finito.
-4. Prima di fare il commit annulla le modifiche della build: `git restore docs` (le nuove immagini in `docs/media/` non sono toccate). Poi `git status`: devono risultare modificati solo file in `content/`, `static/`, `docs/media/`.
+4. Controlla con `git status`: devono risultare modificati solo file in `content/`, `static/`, `docs/media/` (il resto di `docs/` è ignorato da Git).
 5. Commit solo di quelle cartelle: `git add content static docs/media`, messaggio in inglese, breve e descrittivo. Per l'email dell'autore usa quella `noreply` di GitHub (`git config user.email "TUO-NOME-UTENTE@users.noreply.github.com"`), non l'email di ateneo: il repository è pubblico.
 6. `git push -u origin nome/argomento` (la prima volta si apre il browser per l'accesso a GitHub: la password la inserisce l'utente). Poi apri la pull request su GitHub e avvisa Gherardo Chirici.
-7. Dopo l'approvazione e l'unione, Gherardo ricostruisce `docs/` e pubblica: chi propone la modifica non deve farlo.
+7. Sulla pull request GitHub Actions ricostruisce il sito come controllo: se fallisce, leggi l'errore e correggi. Dopo l'approvazione di Gherardo e l'unione su `main` il sito si ricostruisce e si pubblica da solo (in un paio di minuti): chi propone la modifica non deve fare altro.
 
 Se qualcosa non torna (build che fallisce, conflitti, dubbi su un dato), fermati e chiedi all'utente invece di forzare.
