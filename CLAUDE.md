@@ -54,13 +54,13 @@ Il nome del file è l'indirizzo: `content/news/2026-11-20-titolo-breve.md` diven
 
 ## Post social
 
-Ogni news o progetto nuovo che merita un annuncio porta con sé la bozza del post per la pagina Facebook del laboratorio, nella stessa pull request. Quando Gherardo approva e unisce la pull request, la sua approvazione vale anche per il post, che viene pubblicato così com'è: **il testo approvato è quello che esce**, quindi va scritto con la stessa cura della pagina.
+Ogni news o progetto nuovo che merita un annuncio porta con sé la bozza dei post per le pagine social del laboratorio (Facebook `geolab.unifi.it` e Instagram `@geolabforest`), nella stessa pull request. Quando Gherardo approva e unisce la pull request, la sua approvazione vale anche per il post, che viene pubblicato così com'è: **il testo approvato è quello che esce**, quindi va scritto con la stessa cura della pagina.
 
-1. Copia `social/_TEMPLATE.md` in `social/AAAA-MM-GG_titolo-breve.md` e compila l'intestazione: `page:` (il percorso della pagina del sito, ad esempio `/news/2026-11-20-titolo-breve/`), `platforms: facebook`, `status: draft` (sempre `draft`: lo cambia solo chi pubblica), `date`, e se c'è un'immagine `image:` e `alt:` (in inglese).
-2. Scrivi il testo sotto `## Facebook`: inglese, 300-600 caratteri, un solo messaggio, data e luogo scritti per esteso, numeri specifici al posto degli aggettivi, nessun linguaggio promozionale, nessuna emoji decorativa, nessun trattino lungo, 0-2 hashtag. Solo fatti che sono già nella pagina del sito (nessun dato in più, nessun nome o handle inventato).
+1. Copia `social/_TEMPLATE.md` in `social/AAAA-MM-GG_titolo-breve.md` e compila l'intestazione: `page:` (il percorso della pagina del sito, ad esempio `/news/2026-11-20-titolo-breve/`), `platforms: facebook, instagram` (o solo uno dei due), `status: draft` (sempre `draft`: lo cambia solo chi pubblica), `date`, e se c'è un'immagine `image:` e `alt:` (in inglese).
+2. Scrivi un testo per piattaforma, sotto `## Facebook` e `## Instagram`. **Facebook**: 300-600 caratteri, 0-2 hashtag. **Instagram**: serve un'immagine (`image:` e `alt:`, quadrata 1080x1080 o verticale 1080x1350), i primi 125 caratteri dicono cosa è successo e dove, massimo 2.200 caratteri, 5-10 hashtag in fondo, nessun link (non cliccabile: cita "geolabforest.com"). Per entrambi: inglese, un solo messaggio, data e luogo scritti per esteso, numeri specifici al posto degli aggettivi, nessun linguaggio promozionale, nessuna emoji decorativa, nessun trattino lungo, 0-2 hashtag. Solo fatti che sono già nella pagina del sito (nessun dato in più, nessun nome o handle inventato).
 3. **Progetti finanziati dall'UE**: incolla in fondo al post la dicitura completa di finanziamento, identica alla riga `funding:` della pagina, senza accorciarla. Il controllo automatico blocca la pull request se manca.
 4. Non scrivere il link alla pagina né i tag di UNIFI e DAGRI UNIFI: li aggiunge chi pubblica.
-5. Non usare Instagram o LinkedIn: per ora si pubblica solo sulla pagina Facebook del laboratorio.
+5. Non scrivere bozze per LinkedIn o per altri account: per ora si pubblica solo su Facebook e Instagram del laboratorio.
 6. Se la modifica non merita un post (correzione di un refuso, aggiornamento minore), non creare la bozza: il controllo lo segnala solo come avviso.
 
 ## Come si lavora (flusso obbligatorio)

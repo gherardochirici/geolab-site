@@ -101,8 +101,9 @@ def check_social(path):
     meta, body = parse(text)
     if meta.get("status") != "draft":
         report("error", path, "`status` must be `draft` in a pull request: only the owner publishes.")
-    if (meta.get("platforms") or "").strip() != "facebook":
-        report("warning", path, "Only Facebook (the geoLAB page) is enabled for now: `platforms: facebook`.")
+    platforms = [x.strip().lower() for x in (meta.get("platforms") or "").split(",") if x.strip()]
+    if not platforms or any(x not in ("facebook", "instagram") for x in platforms):
+        report("error", path, "`platforms:` must list `facebook` and/or `instagram` (the lab's accounts). LinkedIn is not enabled.")
     page = meta.get("page", "")
     target = page_to_content(page)
     target_meta = {}
@@ -112,28 +113,47 @@ def check_social(path):
         report("error", path, f"`page: {page}` does not match any file ({target}).")
     else:
         target_meta, _ = parse((ROOT / target).read_text(encoding="utf-8-sig"))
-    m = re.search(r"^## Facebook\s*\n(.*?)(?=^## |\Z)", body, re.S | re.M)
-    post = m.group(1).strip() if m else ""
-    if not post:
-        report("error", path, "Missing `## Facebook` section with the post text.")
-        return
-    if re.search(r"\[(DA COMPLETARE|TODO|TBD)", post, re.I):
-        report("error", path, "The post still has placeholders to complete.")
-    ratio = italian_ratio(post)
-    if ratio >= 0.5:
-        report("error", path, f"The post looks Italian (ratio {ratio:.2f}). English only.")
-    if target_meta.get("emblem") == "yes" and target_meta.get("funding") and target_meta["funding"] not in post:
-        report("error", path, "The linked page is EU-funded: the post must include the full funding text, unshortened.")
-    if len(post) > 1500:
-        report("warning", path, f"The post is long ({len(post)} characters). Facebook posts work best at 300-600 characters plus the funding text.")
-    if len(re.findall(r"(?<!\w)#\w+", post)) > 2:
-        report("warning", path, "More than 2 hashtags: Facebook posts use 0-2.")
-    if meta.get("image") and not meta.get("alt"):
-        report("error", path, "`image` without `alt`: add an English alternative text.")
-    if EMAIL.search(post):
-        report("error", path, "Do not publish email addresses in the post.")
-    if SENSITIVE.search(post):
-        report("warning", path, "Wording suggests non-public information. Confirm the content is public.")
+    if meta.get("image"):
+        if not meta.get("alt"):
+            report("error", path, "`image` without `alt`: add an English alternative text.")
+        ref = meta["image"].lstrip("/")
+        if not ((ROOT / "docs" / ref).exists() or (ROOT / "static" / ref).exists()):
+            report("error", path, f"The image {meta['image']} is not in docs/media/ or static/.")
+    for platform in platforms:
+        if platform not in ("facebook", "instagram"):
+            continue
+        title = platform.capitalize()
+        m = re.search(rf"^## {title}\s*\n(.*?)(?=^## |\Z)", body, re.S | re.M | re.I)
+        post = m.group(1).strip() if m else ""
+        if not post:
+            report("error", path, f"`platforms` lists {platform} but the `## {title}` section is missing or empty.")
+            continue
+        if re.search(r"\[(DA COMPLETARE|TODO|TBD)", post, re.I):
+            report("error", path, f"The {title} post still has placeholders to complete.")
+        ratio = italian_ratio(post)
+        if ratio >= 0.5:
+            report("error", path, f"The {title} post looks Italian (ratio {ratio:.2f}). English only.")
+        if target_meta.get("emblem") == "yes" and target_meta.get("funding") and target_meta["funding"] not in post:
+            report("error", path, f"The linked page is EU-funded: the {title} post must include the full funding text, unshortened.")
+        hashtags = len(re.findall(r"(?<!\w)#\w+", post))
+        if EMAIL.search(post):
+            report("error", path, f"Do not publish email addresses in the {title} post.")
+        if SENSITIVE.search(post):
+            report("warning", path, f"Wording in the {title} post suggests non-public information. Confirm the content is public.")
+        if platform == "facebook":
+            if len(post) > 1500:
+                report("warning", path, f"The Facebook post is long ({len(post)} characters). 300-600 characters plus the funding text work best.")
+            if hashtags > 2:
+                report("warning", path, "More than 2 hashtags: Facebook posts use 0-2.")
+        else:
+            if not meta.get("image"):
+                report("error", path, "Instagram needs an image: add `image:` and `alt:` (square 1080x1080 or vertical 1080x1350).")
+            if len(post) > 2200:
+                report("error", path, f"The Instagram caption is {len(post)} characters: the limit is 2,200.")
+            if not 5 <= hashtags <= 10:
+                report("warning", path, f"Instagram captions use 5-10 hashtags at the end ({hashtags} found).")
+            if re.search(r"https?://", post):
+                report("warning", path, "Links in Instagram captions are not clickable: mention the site name instead.")
 
 
 def main():
