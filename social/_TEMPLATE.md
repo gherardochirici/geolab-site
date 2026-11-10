@@ -1,6 +1,6 @@
 ---
 page: /news/2026-11-20-short-title/
-platforms: facebook, instagram
+platforms: facebook, instagram, linkedin
 status: draft
 date: 2026-11-20
 image: /media/2026/11/photo.jpg
@@ -20,5 +20,13 @@ Caption in English: the first 125 characters must say what happened and where, t
 For EU-funded projects, paste the full funding text here too, unshortened.
 
 #forestry #remotesensing #geomatics #forestinventory #research
+
+## LinkedIn
+
+Post for the lab's LinkedIn page, 800-1,500 characters. The first two lines (about 200 characters) are visible before "see more": they must say what happened and where. Short paragraphs of 1-3 lines: the main fact, why it matters (one sentence), who contributed, then the site name (geolabforest.com; the link is added when the post is published). 3-5 hashtags at the end. Mention people or organisations only if their LinkedIn handle is given.
+
+For EU-funded projects, paste the full funding text here too, unshortened.
+
+#forestry #remotesensing #geomatics
 
 Remove the section of a platform you do not use and delete it from `platforms:`.

@@ -102,8 +102,8 @@ def check_social(path):
     if meta.get("status") != "draft":
         report("error", path, "`status` must be `draft` in a pull request: only the owner publishes.")
     platforms = [x.strip().lower() for x in (meta.get("platforms") or "").split(",") if x.strip()]
-    if not platforms or any(x not in ("facebook", "instagram") for x in platforms):
-        report("error", path, "`platforms:` must list `facebook` and/or `instagram` (the lab's accounts). LinkedIn is not enabled.")
+    if not platforms or any(x not in ("facebook", "instagram", "linkedin") for x in platforms):
+        report("error", path, "`platforms:` must list `facebook`, `instagram` and/or `linkedin` (the lab's accounts).")
     page = meta.get("page", "")
     target = page_to_content(page)
     target_meta = {}
@@ -120,9 +120,9 @@ def check_social(path):
         if not ((ROOT / "docs" / ref).exists() or (ROOT / "static" / ref).exists()):
             report("error", path, f"The image {meta['image']} is not in docs/media/ or static/.")
     for platform in platforms:
-        if platform not in ("facebook", "instagram"):
+        if platform not in ("facebook", "instagram", "linkedin"):
             continue
-        title = platform.capitalize()
+        title = "LinkedIn" if platform == "linkedin" else platform.capitalize()
         m = re.search(rf"^## {title}\s*\n(.*?)(?=^## |\Z)", body, re.S | re.M | re.I)
         post = m.group(1).strip() if m else ""
         if not post:
@@ -145,6 +145,11 @@ def check_social(path):
                 report("warning", path, f"The Facebook post is long ({len(post)} characters). 300-600 characters plus the funding text work best.")
             if hashtags > 2:
                 report("warning", path, "More than 2 hashtags: Facebook posts use 0-2.")
+        elif platform == "linkedin":
+            if len(post) < 500 or len(post) > 3000:
+                report("warning", path, f"The LinkedIn post has {len(post)} characters: 800-1,500 work best, 3,000 is the limit.")
+            if not 3 <= hashtags <= 5:
+                report("warning", path, f"LinkedIn posts use 3-5 hashtags at the end ({hashtags} found).")
         else:
             if not meta.get("image"):
                 report("error", path, "Instagram needs an image: add `image:` and `alt:` (square 1080x1080 or vertical 1080x1350).")

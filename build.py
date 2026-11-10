@@ -27,6 +27,7 @@ SITE = {
     "affiliation": "Department of Agriculture, Food, Environment and Forestry (DAGRI), University of Florence",
     "facebook": "https://www.facebook.com/geolab.unifi.it",
     "instagram": "https://www.instagram.com/geolabforest/",
+    "linkedin": "https://www.linkedin.com/company/geolabforest/",
     "address": "via San Bonaventura 13, 50145 Florence, Italy",
 }
 
@@ -140,7 +141,8 @@ def page(title, body, description="", nav_extra=""):
   </div>
   <div>
     <a href="{SITE['facebook']}">Facebook</a><br>
-    <a href="{SITE['instagram']}">Instagram</a>
+    <a href="{SITE['instagram']}">Instagram</a><br>
+    <a href="{SITE['linkedin']}">LinkedIn</a>
   </div>
   {nav_extra}
 </footer>
