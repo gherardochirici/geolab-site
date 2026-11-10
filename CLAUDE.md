@@ -19,6 +19,7 @@ Chi ti usa è un membro del laboratorio che vuole aggiungere o aggiornare conten
 - `static/`: CSS, loghi e immagini fisse del sito.
 - `docs/media/AAAA/MM/`: immagini degli articoli. È l'unica parte di `docs/` che si modifica a mano.
 - `docs/` (tutto il resto): generato da `build.py` sul tuo computer solo per l'anteprima (Git lo ignora). Non modificarlo a mano.
+- `social/`: bozze dei post social collegati alle pagine del sito (vedi "Post social"). Modello: `social/_TEMPLATE.md`.
 - `.github/`: workflow di pubblicazione e file `CODEOWNERS`. Non toccarli senza chiedere a Gherardo.
 - `tools/`: script di servizio (importazione dal vecchio WordPress, compressione immagini).
 
@@ -50,6 +51,17 @@ Il nome del file è l'indirizzo: `content/news/2026-11-20-titolo-breve.md` diven
 - Salvale in `docs/media/AAAA/MM/nome-chiaro.jpg`, lato lungo massimo 1600 px (poi `python tools/optimize_media.py` le comprime), e citale con `/media/AAAA/MM/nome-chiaro.jpg`.
 - Ogni immagine ha un testo alternativo in inglese che descrive ciò che si vede.
 - Foto con persone riconoscibili: solo se l'utente conferma il consenso. Loghi e emblema UE: non modificarli.
+
+## Post social
+
+Ogni news o progetto nuovo che merita un annuncio porta con sé la bozza del post per la pagina Facebook del laboratorio, nella stessa pull request. Quando Gherardo approva e unisce la pull request, la sua approvazione vale anche per il post, che viene pubblicato così com'è: **il testo approvato è quello che esce**, quindi va scritto con la stessa cura della pagina.
+
+1. Copia `social/_TEMPLATE.md` in `social/AAAA-MM-GG_titolo-breve.md` e compila l'intestazione: `page:` (il percorso della pagina del sito, ad esempio `/news/2026-11-20-titolo-breve/`), `platforms: facebook`, `status: draft` (sempre `draft`: lo cambia solo chi pubblica), `date`, e se c'è un'immagine `image:` e `alt:` (in inglese).
+2. Scrivi il testo sotto `## Facebook`: inglese, 300-600 caratteri, un solo messaggio, data e luogo scritti per esteso, numeri specifici al posto degli aggettivi, nessun linguaggio promozionale, nessuna emoji decorativa, nessun trattino lungo, 0-2 hashtag. Solo fatti che sono già nella pagina del sito (nessun dato in più, nessun nome o handle inventato).
+3. **Progetti finanziati dall'UE**: incolla in fondo al post la dicitura completa di finanziamento, identica alla riga `funding:` della pagina, senza accorciarla. Il controllo automatico blocca la pull request se manca.
+4. Non scrivere il link alla pagina né i tag di UNIFI e DAGRI UNIFI: li aggiunge chi pubblica.
+5. Non usare Instagram o LinkedIn: per ora si pubblica solo sulla pagina Facebook del laboratorio.
+6. Se la modifica non merita un post (correzione di un refuso, aggiornamento minore), non creare la bozza: il controllo lo segnala solo come avviso.
 
 ## Come si lavora (flusso obbligatorio)
 
