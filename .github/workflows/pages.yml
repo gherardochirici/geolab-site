@@ -18,9 +18,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      - name: Automatic checks on the pull request
+        if: github.event_name == 'pull_request'
+        run: python -I tools/check_pr.py --base origin/${{ github.base_ref }}
       - name: Build the site into docs/
         run: python -I build.py
       - uses: actions/upload-pages-artifact@v3
