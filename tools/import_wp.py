@@ -28,7 +28,7 @@ NS = {
 }
 
 # Pagine e articoli scritti a mano nel nuovo sito, o che non servono più.
-SKIP_SLUGS = {"monifun", "forwards", "forwards-project", "home", "projects", "project", "about-us", "contact", "contact-2", "sample-page", "privacy-policy", "francesca_giannetti"}
+SKIP_SLUGS = {"monifun", "forwards", "forwards-project", "home", "projects", "project", "about-us", "contact", "contact-2", "sample-page", "privacy-policy", "francesca_giannetti", "precision-forestry"}
 SKIP_TITLES = {"Merry Christmas", "Merry Christmas and happy New Year!"}
 
 # Dove vanno i vecchi indirizzi delle pagine e degli articoli che non hanno un equivalente diretto.
@@ -43,6 +43,7 @@ SKIP_TARGETS = {
     "contact": "/",
     "contact-2": "/#contact",
     "francesca_giannetti": "/pages/people/",
+    "precision-forestry": "/research/",
 }
 CATEGORY_REDIRECTS = {  # sezioni del vecchio sito (/category/...)
     "/category/projects/": "/projects/",

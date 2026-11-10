@@ -260,7 +260,7 @@ def build():
 </section>
 <section class="three">
   {home_lists}
-  <div id="people"><h2>People</h2><ul class="list">{people_html}</ul></div>
+  <div id="people"><h2>Director</h2><ul class="list">{people_html}</ul></div>
 </section>
 <div class="pattern"><img src="/img/logo/geolab-pattern.webp" alt=""></div>
 """
