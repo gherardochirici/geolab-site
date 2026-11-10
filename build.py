@@ -262,6 +262,9 @@ def build():
   <div id="people"><h2>People</h2><ul class="list">{people_html}</ul></div>
 </section>
 <div class="pattern"><img src="/img/logo/geolab-pattern.webp" alt=""></div>
+<div class="partners">
+  <a href="https://www.unifi.it/"><img src="/img/logo/unifi-logo.png" alt="University of Florence (Università degli Studi Firenze)"></a>
+</div>
 """
     write("index.html", wrap(f"{SITE['name']}, {SITE['tagline']}", home, SITE["affiliation"]))
 
