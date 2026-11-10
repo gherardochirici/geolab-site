@@ -17,6 +17,7 @@ from pathlib import Path
 ROOT = Path(__file__).parent
 sys.path.insert(0, str(ROOT / "tools"))
 from langcheck import italian_ratio  # noqa: E402  (il sito è solo in inglese)
+from ogimage import DEFAULT as OG_DEFAULT, SITE_URL, og_image  # noqa: E402  (anteprima dei link condivisi)
 CONTENT = ROOT / "content"
 STATIC = ROOT / "static"
 OUT = ROOT / "docs"  # cartella servita da GitHub Pages
@@ -106,8 +107,31 @@ def render_body(meta, body):
     return markdown(body)
 
 
-def page(title, body, description="", nav_extra=""):
+def snippet(body, limit=200):
+    """Primo paragrafo di testo semplice (senza Markdown né HTML), per la descrizione della pagina."""
+    for block in re.split(r"\n\s*\n", body):
+        block = block.strip()
+        if not block or block.startswith(("#", "!", "-", "<")):
+            continue
+        text = re.sub(r"!\[[^\]]*\]\([^)]*\)", "", block)
+        text = re.sub(r"\[([^\]]+)\]\([^)]*\)", r"\1", text)
+        text = re.sub(r"[*_`]", "", " ".join(text.split()))
+        return text if len(text) <= limit else text[: text.rfind(" ", 0, limit)].rstrip(",;:. ") + "..."
+    return ""
+
+
+def page(title, body, description="", nav_extra="", path="/", image=OG_DEFAULT):
     desc = f'<meta name="description" content="{html.escape(description)}">' if description else ""
+    # Anteprima dei link condivisi (Facebook, LinkedIn, messaggi): indirizzi assoluti sul dominio pubblico.
+    og = (
+        f'<meta property="og:site_name" content="{SITE["name"]}, {SITE["tagline"]}">\n'
+        f'<meta property="og:type" content="{"website" if path == "/" else "article"}">\n'
+        f'<meta property="og:title" content="{html.escape(title)}">\n'
+        + (f'<meta property="og:description" content="{html.escape(description)}">\n' if description else "")
+        + f'<meta property="og:url" content="{SITE_URL}{path}">\n'
+        f'<meta property="og:image" content="{SITE_URL}{image}">\n'
+        '<meta name="twitter:card" content="summary_large_image">'
+    )
     nav = "".join(f'<a href="/{key}/">{label}</a>' for key, label in SECTIONS.items())
     return f"""<!doctype html>
 <html lang="en">
@@ -116,6 +140,7 @@ def page(title, body, description="", nav_extra=""):
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{html.escape(title)}</title>
 {desc}
+{og}
 <link rel="icon" type="image/png" href="/img/logo/favicon-64.png">
 <link rel="stylesheet" href="/css/site.css">
 </head>
@@ -242,8 +267,8 @@ def build():
     )
     pages_nav = f'<nav class="foot-pages" aria-label="More pages">{pages_nav}</nav>' if pages_nav else ""
 
-    def wrap(title, body, description=""):
-        return page(title, body, description, pages_nav)
+    def wrap(title, body, description="", path="/", image=OG_DEFAULT):
+        return page(title, body, description, pages_nav, path, image)
 
     recent_news = [n for n in data["news"] if n[0].get("date", "") >= ARCHIVE_BEFORE]
     archive_news = [n for n in data["news"] if n[0].get("date", "") < ARCHIVE_BEFORE]
@@ -278,11 +303,11 @@ def build():
             body = f'<section><h1 class="section-title">{label}</h1>{list_items(shown[name])}{more}</section>'
         else:
             body = f'<section><h1 class="section-title">{label}</h1>{list_items(data[name])}</section>'
-        write(f"{name}/index.html", wrap(f"{label} | {SITE['name']}", body))
+        write(f"{name}/index.html", wrap(f"{label} | {SITE['name']}", body, path=f"/{name}/"))
     if archive_news:
         body = (f'<section><h1 class="section-title">News archive</h1><p class="sub">News published before {ARCHIVE_BEFORE[:4]}. '
                 f'<a href="/news/">Back to recent news</a></p>{list_items(archive_news)}</section>')
-        write("news/archive/index.html", wrap(f"News archive | {SITE['name']}", body))
+        write("news/archive/index.html", wrap(f"News archive | {SITE['name']}", body, path="/news/archive/"))
 
     for folder in list(SECTIONS) + ["pages"]:
         for meta, body in data[folder]:
@@ -306,7 +331,11 @@ def build():
   {link}
   {funding_box(meta)}
 </article>"""
-            write(f"{folder}/{meta['slug']}/index.html", wrap(f"{meta['title']} | {SITE['name']}", html_body, meta.get("subtitle", "")))
+            description = meta.get("subtitle") or (snippet(body) if meta.get("format") != "html" else "")
+            write(
+                f"{folder}/{meta['slug']}/index.html",
+                wrap(f"{meta['title']} | {SITE['name']}", html_body, description, f"/{folder}/{meta['slug']}/", og_image(meta, meta["slug"], ROOT)),
+            )
 
     # Reindirizzamenti dai vecchi indirizzi WordPress (redirects.json, prodotto da tools/import_wp.py): GitHub Pages non ha
     # redirect del server, quindi ogni vecchio indirizzo diventa una piccola pagina che rimanda al nuovo.

@@ -33,6 +33,7 @@ subtitle: Una riga di sottotitolo   (facoltativo)
 logo: /img/logo/nome.png            (progetti, facoltativo)
 image: /media/2026/11/foto.jpg      (immagine di anteprima, facoltativa)
 alt: Testo alternativo dell'immagine, in inglese
+social_image: /img/og/nome.jpg      (scheda 1200x630 mostrata quando il link viene condiviso, facoltativa)
 emblem: yes                         (progetti finanziati UE)
 funding: testo di finanziamento     (progetti finanziati UE)
 ---
@@ -62,6 +63,8 @@ Ogni news o progetto nuovo che merita un annuncio porta con sé la bozza dei pos
 4. Non scrivere il link alla pagina né i tag di UNIFI e DAGRI UNIFI: li aggiunge chi pubblica.
 5. Non scrivere bozze per LinkedIn o per altri account: per ora si pubblica solo su Facebook, Instagram e LinkedIn del laboratorio.
 6. Se la modifica non merita un post (correzione di un refuso, aggiornamento minore), non creare la bozza: il controllo lo segnala solo come avviso.
+7. **Immagini: chiedile all'utente.** Ogni post ha bisogno di un'immagine pensata per i social, e una news o un progetto nuovo anche di un'immagine di anteprima del link. Se non ce n'è una adatta, chiedila all'autore (foto del meeting, grafico, logo del progetto) prima di proseguire. Regole: orizzontale 1200x630 (anteprima del link, Facebook, LinkedIn) oppure verticale 1080x1350 (Instagram); niente testo piccolo né loghi al bordo, perché le miniature sono ritagliate al quadrato e l'emblema UE non deve mai restare tagliato; i loghi di progetto e l'emblema UE si ridimensionano soltanto, mai alterati. Per un progetto senza foto, prepara una scheda 1200x630 con il logo grande al centro e l'emblema UE sotto (modello: `static/img/og/monifun.jpg`), salvala in `static/img/og/<nome-del-file>.jpg` (viene usata da sola) o indicala con `social_image:`. Senza immagine di anteprima i link mostrano la scheda generica del laboratorio e il controllo lo segnala.
+8. **Anteprima prima della pull request.** `python tools/preview_social.py social/<file>.md` scrive una pagina HTML con l'aspetto di Facebook, Instagram e LinkedIn (testo, immagine, miniature ritagliate, anteprima del link) e i controlli sull'immagine: aprila, correggi quello che non va e citane gli avvisi nella descrizione della pull request. Gherardo guarda la stessa anteprima prima di approvare.
 
 ## Come si lavora (flusso obbligatorio)
 
