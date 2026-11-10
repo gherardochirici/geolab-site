@@ -253,7 +253,7 @@ def build():
     )
     home = f"""
 <section class="intro">
-  <p class="lead-tag">Forests, remote sensing and geomatics for monitoring and management.</p>
+  <p class="lead-tag">The Laboratory of Forest Geomatics at the University of Florence. Earth observation, modelling and geomatics for sustainable forest management.</p>
   <div class="cols">{''.join(f'<div>{c}</div>' for c in intro)}</div>
 </section>
 <section id="projects">
