@@ -67,6 +67,13 @@ def check_markdown(path, status):
         report("error", path, "News need `date: YYYY-MM-DD` in the front matter.")
     if meta.get("image") and not meta.get("alt"):
         report("error", path, "`image` without `alt`: add an English alternative text.")
+    if meta.get("social_image"):
+        ref = meta["social_image"].lstrip("/")
+        if not ((ROOT / "docs" / ref).exists() or (ROOT / "static" / ref).exists()):
+            report("error", path, f"`social_image: {meta['social_image']}` is not in docs/media/ or static/.")
+    elif status == "A" and path.startswith(("content/news/", "content/projects/")) and not meta.get("image") \
+            and not (ROOT / "static" / "img" / "og" / (Path(path).stem + ".jpg")).exists():
+        report("warning", path, "New page without a preview image: shared links will show the generic geoLAB card. Add `social_image:` (1200x630 card with the project logo and the EU emblem) or `image:`.")
     for ref in re.findall(r"!\[[^\]]*\]\((/[^)\s]+)\)", body) + ([meta["image"]] if meta.get("image", "").startswith("/") else []):
         if not ((ROOT / "docs" / ref.lstrip("/")).exists() or (ROOT / "static" / ref.lstrip("/")).exists()):
             report("error", path, f"The image {ref} is not in docs/media/ or static/.")

@@ -1,6 +1,7 @@
 ---
 title: geoLAB at the MoniFun consortium meeting: forest mapping, remote sensing and Federated Learning
 date: 2026-11-10
+social_image: /img/og/monifun.jpg
 emblem: yes
 funding: Funded by the European Union. Views and opinions expressed are however those of the author(s) only and do not necessarily reflect those of the European Union or the European Research Executive Agency. Neither the European Union nor the granting authority can be held responsible for them.
 ---
