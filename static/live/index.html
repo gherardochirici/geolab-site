@@ -1,0 +1,1306 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="refresh" content="300">
+<title>The geoLAB at work</title>
+
+<script>document.documentElement.setAttribute('data-tema','hud')</script>
+
+<style>
+:root {
+  color-scheme: light;
+  --page: #f9f9f7; --surface: #fcfcfb; --ink: #0b0b0b; --ink2: #52514e; --muted: #898781;
+  --grid: #e1e0d9; --axis: #c3c2b7; --border: rgba(11,11,11,.10);
+  --s1: #2a78d6; --run: #86b6ef; --ok: #0ca30c; --warn: #b67a00; --warn-bg: rgba(250,178,25,.16); --bad: #d03b3b;
+  --m1: #2a78d6; --m2: #eb6834; --m3: #1baf7a;
+}
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme="light"])) {
+    color-scheme: dark;
+    --page: #0d0d0d; --surface: #1a1a19; --ink: #f0efec; --ink2: #c3c2b7; --muted: #898781;
+    --grid: #2c2c2a; --axis: #383835; --border: rgba(255,255,255,.10);
+    --s1: #3987e5; --run: #184f95; --ok: #0ca30c; --warn: #fab219; --warn-bg: rgba(250,178,25,.14); --bad: #e66767;
+    --m1: #3987e5; --m2: #d95926; --m3: #199e70;
+  }
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --page: #0d0d0d; --surface: #1a1a19; --ink: #f0efec; --ink2: #c3c2b7; --muted: #898781;
+  --grid: #2c2c2a; --axis: #383835; --border: rgba(255,255,255,.10);
+  --s1: #3987e5; --run: #184f95; --ok: #0ca30c; --warn: #fab219; --warn-bg: rgba(250,178,25,.14); --bad: #e66767;
+  --m1: #3987e5; --m2: #d95926; --m3: #199e70;
+}
+* { box-sizing: border-box; }
+html { background: var(--page); scroll-behavior: smooth; scroll-padding-top: 56px; }
+body { margin: 0; background: var(--page); color: var(--ink); font: 14px/1.45 system-ui, -apple-system, "Segoe UI", sans-serif; }
+main { max-width: 1240px; margin: 0 auto; padding: 16px; }
+h1 { font-size: 20px; margin: 0; font-weight: 650; }
+h2.sec { font-size: 17px; margin: 22px 0 10px; font-weight: 650; }
+.sub { color: var(--ink2); font-size: 13px; }
+.note { color: var(--ink2); font-size: 12.5px; }
+.top { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: baseline; justify-content: space-between; margin-bottom: 14px; }
+.pill { display: inline-flex; align-items: center; gap: 6px; padding: 2px 9px; border-radius: 999px; font-weight: 600; font-size: 12px; border: 1px solid var(--border); background: var(--surface); white-space: nowrap; }
+.pill.ok .ic, .pill.done .ic { color: var(--ok); } .pill.warn .ic { color: var(--warn); } .pill.bad .ic { color: var(--bad); }
+.pill.run .ic { color: var(--s1); } .pill.idle .ic { color: var(--muted); }
+.pill.run .ic, .livedot { animation: pulse 1.6s ease-in-out infinite; }
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
+.top .pill { font-size: 13px; padding: 3px 10px; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 14px; margin-bottom: 14px; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 14px; }
+.tile { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 12px; }
+.tile .v { font-size: 24px; font-weight: 650; line-height: 1.15; }
+.tile .v small { font-size: 12px; font-weight: 400; color: var(--ink2); margin-left: 4px; }
+.tile .l { color: var(--ink2); font-size: 12px; margin-top: 2px; }
+.tile.warn .v { color: var(--warn); }
+.alert { border: 1px solid var(--border); border-left: 4px solid var(--warn); background: var(--warn-bg); border-radius: 8px; padding: 10px 12px; margin-bottom: 12px; }
+.alert b { display: block; margin-bottom: 2px; }
+.alert .ic { color: var(--warn); margin-right: 4px; }
+.alert a { color: inherit; text-decoration: none; } .alert a:hover { text-decoration: underline; }
+.alert .meta { color: var(--ink2); font-size: 12px; margin-top: 4px; display: flex; gap: 6px; align-items: center; }
+.stale { display: none; border: 1px solid var(--bad); border-radius: 8px; padding: 8px 12px; margin-bottom: 12px; color: var(--bad); font-weight: 600; }
+.nav { position: sticky; top: 0; z-index: 6; display: flex; flex-wrap: wrap; gap: 6px 8px; align-items: center; padding: 8px 0; margin: 0 0 12px; background: var(--page); border-bottom: 1px solid var(--grid); }
+.nav a, .nav button, .btn { color: var(--ink); text-decoration: none; font: inherit; font-size: 13px; padding: 4px 11px; border: 1px solid var(--border); border-radius: 999px; background: var(--surface); cursor: pointer; }
+.nav a:hover, .nav button:hover, .btn:hover { border-color: var(--s1); }
+.nav a.ext { border-color: var(--s1); }
+.nav .sp { flex: 1; }
+.grp { margin: 14px 0 6px; font-size: 12px; letter-spacing: .04em; text-transform: uppercase; color: var(--ink2); font-weight: 650; }
+.pcards { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 10px; }
+.pc { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 12px; display: block; color: inherit; text-decoration: none; }
+a.pc:hover { border-color: var(--s1); }
+.pc .h { display: flex; justify-content: space-between; gap: 8px; align-items: flex-start; }
+.pc .t { font-weight: 650; line-height: 1.25; }
+.pc .pct { font-size: 22px; font-weight: 650; line-height: 1.1; margin: 8px 0 4px; display: flex; align-items: baseline; gap: 8px; }
+.pc .pct small { font-size: 12px; font-weight: 400; color: var(--ink2); }
+.pc .m { color: var(--ink2); font-size: 12px; margin-top: 6px; overflow-wrap: anywhere; }
+.pc .m.warn { color: var(--warn); font-weight: 600; } .pc .m.bad { color: var(--bad); font-weight: 600; }
+.pc .tec { margin-top: 8px; font-size: 12.5px; color: var(--ink); overflow-wrap: anywhere; }
+.pc ul.mk { list-style: none; margin: 6px 0 0; padding: 0; font-size: 12px; color: var(--ink2); }
+.pc ul.mk li { padding: 1px 0 1px 14px; position: relative; overflow-wrap: anywhere; }
+.pc ul.mk li::before { content: "\2610"; position: absolute; left: 0; color: var(--muted); }
+.pc ul.mk li.warn { color: var(--warn); font-weight: 600; } .pc ul.mk li.bad { color: var(--bad); font-weight: 600; } .pc ul.mk li.more { color: var(--muted); }
+.pc ul.mk li.more::before { content: ""; }
+.pc .go { margin-top: 8px; font-size: 12.5px; color: var(--s1); font-weight: 600; }
+.pc svg.sp { display: block; margin-top: 6px; }
+.track { height: 10px; background: var(--grid); border-radius: 5px; overflow: hidden; }
+.track.s { height: 6px; border-radius: 3px; margin-top: 3px; }
+.fill { height: 100%; background: var(--s1); border-radius: 0 5px 5px 0; }
+.track.live .fill { background-image: repeating-linear-gradient(110deg, rgba(255,255,255,.28) 0 8px, rgba(255,255,255,0) 8px 16px); background-size: 32px 100%; animation: slide 1.1s linear infinite; }
+@keyframes slide { to { background-position: 32px 0; } }
+.steps { display: flex; gap: 2px; margin-top: 6px; }
+.steps i { flex: 1; height: 6px; border-radius: 2px; background: var(--grid); position: relative; overflow: hidden; }
+.steps i b { position: absolute; inset: 0 auto 0 0; background: var(--s1); }
+.chips { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px; }
+.chip { display: inline-flex; gap: 5px; align-items: baseline; padding: 2px 9px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface); font-size: 12.5px; }
+.chip.warn { color: var(--warn); border-color: var(--warn); font-weight: 600; } .chip.bad { color: var(--bad); border-color: var(--bad); font-weight: 600; }
+.dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 4px; background: var(--muted); }
+.mc0 { --c: var(--m1); } .mc1 { --c: var(--m2); } .mc2 { --c: var(--m3); } .mc3 { --c: var(--muted); }
+.dot[class*=mc] { background: var(--c); }
+table { border-collapse: collapse; width: 100%; font-size: 12.5px; }
+th, td { text-align: left; padding: 5px 8px; border-bottom: 1px solid var(--grid); vertical-align: top; }
+th { color: var(--ink2); font-weight: 600; }
+td a { color: inherit; text-decoration: none; font-weight: 600; } td a:hover { text-decoration: underline; }
+td .d { color: var(--ink2); font-size: 12px; margin-top: 1px; }
+td.nw, th.nw { white-space: nowrap; }
+.tl { overflow-x: auto; }
+.tl svg { display: block; min-width: 720px; width: 100%; height: auto; }
+.tl text { fill: var(--muted); font-size: 10.5px; font-family: inherit; }
+.tl .lbl { fill: var(--ink); font-size: 12px; }
+.tl .hoggi { fill: var(--ink); font-weight: 700; } .tl .hwe { opacity: .6; } .tl .hmese { font-weight: 650; fill: var(--ink2); }
+.tl .sep { stroke: var(--grid); }
+.tl .cell { fill: var(--c); } .tl .cell0 { fill: var(--grid); opacity: .7; }
+.tl .gl { font-size: 13px; font-weight: 700; }
+.tl .e-run { fill: var(--s1); } .tl .e-wait { fill: var(--warn); } .tl .e-ok { fill: var(--ok); } .tl .e-idle { fill: var(--muted); }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; color: var(--ink2); font-size: 12px; margin-top: 10px; }
+.sw { display: inline-block; width: 14px; height: 14px; border-radius: 3px; vertical-align: -2px; margin-right: 5px; border: 1px solid var(--axis); }
+.scala { display: inline-flex; gap: 2px; vertical-align: middle; } .scala i { width: 14px; height: 12px; border-radius: 3px; background: var(--m1); }
+.empty { color: var(--ink2); border: 1px dashed var(--axis); border-radius: 8px; padding: 12px 14px; }
+details summary { cursor: pointer; color: var(--ink2); font-size: 13px; margin-top: 8px; }
+details ul { list-style: none; padding: 0; margin: 6px 0 0; font-size: 12.5px; color: var(--ink2); }
+details li { display: flex; gap: 8px; padding: 1px 0; } details li.f { color: var(--ink); }
+code { background: var(--grid); border-radius: 4px; padding: 0 5px; font-size: 12px; }
+.noanim *, .noanim *::before, .noanim *::after { animation: none !important; transition: none !important; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } html { scroll-behavior: auto; } }
+@media (max-width: 520px) { main { padding: 12px; } .tile .v { font-size: 20px; } .pcards { grid-template-columns: 1fr; } .hide-s { display: none; } }
+.hud-only { display: none; }
+:root[data-tema="hud"] {
+  color-scheme: dark;
+  --page: #0a0814; --surface: #110e20; --ink: #ece9fb; --ink2: #b6b0d8; --muted: #7f79a8;
+  --grid: #251f40; --axis: #3b3463; --border: rgba(167,139,250,.30);
+  --s1: #a78bfa; --run: #4c3f8f; --run-ink: #ece9fb; --done-ink: #0a0814; --shade: rgba(167,139,250,.16);
+  --ok: #4ade80; --warn: #fbbf24; --warn-bg: rgba(251,191,36,.10); --bad: #f87171;
+  --seq0: #2a2350; --seq1: #d4c8ff; --s2: #ff9158;
+  --m1: #6aa8ff; --m2: #ff9158; --m3: #2dd4bf; --m1-ink: #0a0814; --m2-ink: #0a0814; --m3-ink: #0a0814;
+  --mono: "JetBrains Mono", "Cascadia Mono", "Cascadia Code", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --glow: 0 0 14px rgba(167,139,250,.35);
+}
+html[data-tema="hud"] { background: var(--page); }
+:root[data-tema="hud"] body {
+  font-family: var(--mono); font-size: 13px; letter-spacing: .01em;
+  background:
+    radial-gradient(900px 480px at 78% -8%, rgba(124,92,230,.20), transparent 62%),
+    radial-gradient(700px 420px at 8% 30%, rgba(80,60,170,.12), transparent 60%),
+    linear-gradient(rgba(167,139,250,.035) 1px, transparent 1px) 0 0 / 100% 36px,
+    linear-gradient(90deg, rgba(167,139,250,.035) 1px, transparent 1px) 0 0 / 36px 100%,
+    var(--page);
+  background-attachment: fixed;
+}
+:root[data-tema="hud"] main { counter-reset: sec; }
+
+:root[data-tema="hud"] h1 { font-size: clamp(17px, 4.6vw, 34px); letter-spacing: .2em; text-transform: uppercase; font-weight: 600; text-shadow: 0 0 18px rgba(167,139,250,.45); }
+:root[data-tema="hud"] .sub, :root[data-tema="hud"] .note { font-size: 11.5px; }
+:root[data-tema="hud"] h2, :root[data-tema="hud"] h2.sec { font-size: 12.5px; font-weight: 600; letter-spacing: .16em; text-transform: uppercase; color: var(--ink); }
+:root[data-tema="hud"] h2.sec { margin: 26px 0 12px; padding-bottom: 7px; border-bottom: 1px dashed var(--axis); }
+:root[data-tema="hud"] h2.sec::before { counter-increment: sec; content: "\25CF  " counter(sec, decimal-leading-zero) " / "; color: var(--s1); }
+:root[data-tema="hud"] section.card > h2::before { content: "\25CF  "; color: var(--s1); }
+:root[data-tema="hud"] .grp { letter-spacing: .16em; color: var(--s1); font-size: 11px; }
+:root[data-tema="hud"] .grp::before { content: "\2500\2500 "; color: var(--axis); }
+
+:root[data-tema="hud"] .hudbar { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 18px; justify-content: space-between; margin: 0 0 14px; padding-bottom: 7px; border-bottom: 1px dashed var(--axis); font-size: 10.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+.hudbar .live { display: inline-flex; align-items: center; gap: 6px; background: var(--s1); color: #0a0814; font-weight: 700; padding: 1px 9px; border-radius: 2px; letter-spacing: .18em; }
+.hudbar .live i { width: 6px; height: 6px; border-radius: 50%; background: #0a0814; animation: pulse 1.6s ease-in-out infinite; }
+.hudbar .kv { display: inline-flex; gap: 14px; flex-wrap: wrap; }
+.hudbar .kv b { color: var(--ink); font-weight: 600; margin-left: 5px; letter-spacing: .06em; }
+.hudbar .kv b.w { color: var(--warn); }
+
+:root[data-tema="hud"] :is(.card, .tile, .pc, .mat, figure, .mini, .panel) {
+  border-radius: 3px; border: 1px solid var(--border);
+  background:
+    linear-gradient(var(--s1), var(--s1)) top left / 11px 1px no-repeat,
+    linear-gradient(var(--s1), var(--s1)) top left / 1px 11px no-repeat,
+    linear-gradient(var(--s1), var(--s1)) bottom right / 11px 1px no-repeat,
+    linear-gradient(var(--s1), var(--s1)) bottom right / 1px 11px no-repeat,
+    linear-gradient(180deg, rgba(167,139,250,.07), rgba(167,139,250,0) 55%),
+    var(--surface);
+}
+:root[data-tema="hud"] a.pc:hover, :root[data-tema="hud"] .nav a:hover, :root[data-tema="hud"] .nav button:hover, :root[data-tema="hud"] .btn:hover { border-color: var(--s1); box-shadow: var(--glow); }
+:root[data-tema="hud"] .tile .v { font-size: 25px; font-weight: 500; letter-spacing: .02em; text-shadow: 0 0 14px rgba(167,139,250,.35); }
+:root[data-tema="hud"] .tile .l, :root[data-tema="hud"] .stat .l { font-size: 10.5px; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
+:root[data-tema="hud"] .tile.warn .v { text-shadow: 0 0 14px rgba(251,191,36,.45); }
+:root[data-tema="hud"] .pc .t { letter-spacing: .02em; }
+:root[data-tema="hud"] .pc .pct { font-weight: 500; text-shadow: 0 0 12px rgba(167,139,250,.35); }
+:root[data-tema="hud"] .pc .go { letter-spacing: .06em; text-transform: uppercase; font-size: 11px; }
+:root[data-tema="hud"] .alert { border-radius: 3px; border-left-width: 3px; }
+
+:root[data-tema="hud"] .track { border-radius: 0; height: 8px; background: var(--grid); }
+:root[data-tema="hud"] .track.s { height: 5px; }
+:root[data-tema="hud"] .fill { border-radius: 0; background-color: var(--s1); background-image: linear-gradient(90deg, #6d4fe0, var(--s1)); box-shadow: 0 0 10px rgba(167,139,250,.6); }
+:root[data-tema="hud"] .track.live .fill { background-image: repeating-linear-gradient(110deg, rgba(255,255,255,.30) 0 8px, rgba(255,255,255,0) 8px 16px), linear-gradient(90deg, #6d4fe0, var(--s1)); background-size: 32px 100%, 100% 100%; }
+:root[data-tema="hud"] .steps i { border-radius: 0; }
+:root[data-tema="hud"] .steps i b { background: var(--s1); box-shadow: 0 0 6px rgba(167,139,250,.6); }
+
+:root[data-tema="hud"] .nav { background: rgba(10,8,20,.88); backdrop-filter: blur(6px); border-bottom: 1px solid var(--border); }
+:root[data-tema="hud"] .nav a, :root[data-tema="hud"] .nav button, :root[data-tema="hud"] .btn { border-radius: 2px; font-size: 11px; letter-spacing: .1em; text-transform: uppercase; padding: 4px 10px; font-family: var(--mono); background: var(--surface); }
+:root[data-tema="hud"] .nav a.ext { background: var(--s1); color: #0a0814; border-color: var(--s1); font-weight: 700; }
+:root[data-tema="hud"] .pill { border-radius: 2px; font-size: 10.5px; letter-spacing: .1em; text-transform: uppercase; padding: 2px 8px; }
+:root[data-tema="hud"] .top .pill { font-size: 11px; padding: 3px 10px; }
+:root[data-tema="hud"] .pill.run .ic { color: var(--s1); }
+:root[data-tema="hud"] .chip { border-radius: 2px; }
+:root[data-tema="hud"] .chip.warn { color: var(--warn); }
+:root[data-tema="hud"] code, :root[data-tema="hud"] pre { border-radius: 2px; }
+:root[data-tema="hud"] th { font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+:root[data-tema="hud"] td, :root[data-tema="hud"] th { border-bottom-style: dashed; }
+:root[data-tema="hud"] .cell { border-radius: 1px; }
+:root[data-tema="hud"] #tip { border-radius: 2px; border-color: var(--s1); box-shadow: 0 0 18px rgba(167,139,250,.35); }
+:root[data-tema="hud"] .stale { border-radius: 3px; }
+:root[data-tema="hud"] details summary { letter-spacing: .06em; }
+:root[data-tema="hud"] .tl .cell0 { opacity: .5; }
+
+:root[data-tema="hud"] .hero.hud-only { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; margin: 0 0 14px; }
+.hero .panel { padding: 0; margin: 0; overflow: hidden; min-width: 0; }
+.panel .ph { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; padding: 8px 12px; border-bottom: 1px solid var(--grid); font-size: 10.5px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+.panel .ph b { color: var(--ink); font-weight: 600; letter-spacing: .16em; }
+.panel .ph b::before { content: "\25CF  "; color: var(--s1); }
+.hero canvas { display: block; width: 100%; height: 400px; touch-action: pan-y; }
+.term { padding: 8px 12px 12px; font-size: 12px; line-height: 1.7;  }
+.term .ln { display: grid; grid-template-columns: 3.6em minmax(0, 1fr) auto; gap: 0 10px; align-items: baseline; border-bottom: 1px dashed rgba(167,139,250,.12); }
+.term .ln .v { color: var(--s1); text-transform: lowercase; }
+.term .ln .v::before { content: "\203A  "; color: var(--axis); }
+.term .ln .t { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--ink); }
+.term .ln .s { font-size: 10.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); white-space: nowrap; }
+.term .ln .s.run { color: var(--s1); } .term .ln .s.warn { color: var(--warn); } .term .ln .s.done { color: var(--ok); } .term .ln .s.bad { color: var(--bad); }
+.term .ln.run .t { text-shadow: 0 0 10px rgba(167,139,250,.5); }
+.term .cur { color: var(--s1); animation: pulse 1.1s steps(2, start) infinite; }
+@media (max-width: 820px) { :root[data-tema="hud"] .hero.hud-only { grid-template-columns: 1fr; } .hero canvas { height: 330px; } }
+@media (max-width: 520px) { :root[data-tema="hud"] .tile .v { font-size: 20px; } .term .ln { grid-template-columns: 3em minmax(0, 1fr) auto; } }
+
+.hero .panel { position: relative; }
+.rtip { position: absolute; z-index: 6; pointer-events: none; max-width: 280px; padding: 7px 10px; background: var(--surface); border: 1px solid var(--s1); font-size: 11px; line-height: 1.55; color: var(--ink); box-shadow: 0 0 16px rgba(167,139,250,.28); overflow-wrap: anywhere; }
+.rtip b { color: var(--s1); font-weight: 600; } .rtip .rm { color: var(--muted); font-size: 10px; } .rtip .rbad { color: var(--bad); }
+@media (max-width: 520px) { .term .ln { grid-template-columns: 3em minmax(0, 1fr); } .term .ln .s { grid-column: 2; white-space: normal; padding-bottom: 3px; } }
+
+.term .s .rc { font-weight: 600; letter-spacing: .06em; margin-right: 2px; } .term .s .rc.on { color: var(--ok); } .term .s .rc.off { color: var(--bad); }
+
+.term .ln .dt { grid-column: 2 / -1; color: var(--muted); font-size: 11px; line-height: 1.5; letter-spacing: 0; padding: 1px 0 7px; cursor: pointer; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.term .ln .dt.open { display: block; }
+.term { max-height: none; overflow: visible; }
+
+.term .tgrp { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin: 12px 0 2px; padding: 4px 0; border-bottom: 1px solid var(--s1); font-size: 10.5px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+.term .tgrp:first-child { margin-top: 2px; } .term .tgrp b { color: var(--s1); font-weight: 600; letter-spacing: .22em; } .term .tgrp.warn span { color: var(--warn); }
+
+.term .ln.fig { border-left: 2px solid var(--s1); padding-left: 10px; } .term .ln .t .rel { font-style: normal; font-size: 10.5px; color: var(--s1); opacity: .85; }
+
+.term .ln .relr { grid-column: 2 / -1; font-size: 10.5px; color: var(--s1); padding-top: 1px; overflow-wrap: anywhere; }
+
+.panel .ph .tabs { display: inline-flex; gap: 6px; flex-wrap: wrap; }
+.panel .ph .tab { font: inherit; font-size: 10px; letter-spacing: .1em; text-transform: uppercase; padding: 2px 8px; color: var(--muted); background: transparent; border: 1px solid var(--grid); cursor: pointer; }
+.panel .ph .tab:hover { color: var(--ink); border-color: var(--s1); } .panel .ph .tab.on { color: var(--s1); border-color: var(--s1); background: rgba(167,139,250,.12); }
+</style>
+<script>(function () {
+  var MES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  var R = [
+    [/: mappa animata dei processi in corso sulla macchina e delle sessioni e dei progetti a cui sono collegati \(stessi dati dell.elenco accanto\)/, ': animated map of the machines, the processes running on them and the projects they serve'],
+    [/: rete degli script \.py di ogni processo, con le relazioni tra uno script e l.altro/, ': network of the scripts of each process, showing how scripts relate to one another'],
+    [/: grafico animato dei processi \(dimensione = MB prodotti\) che generano i paper \(dimensione = token spesi, anello = % di completamento\)/, ': animated chart of the processes (size = MB produced) that generate the studies (size = tokens spent, ring = % completion)'],
+    [/^sole = MB prodotti.*$/, 'sun = MB produced (log scale) \u00b7 study = tokens spent \u00b7 ring = % completion \u00b7 dots = sessions \u00b7 satellites = scripts: blue .py, pink .R, teal sbatch (relations in the network below)'],
+    [/^freccia = .*$/, 'arrow = \u201cuses\u201d \u00b7 dashed = \u201cmentions or launches\u201d \u00b7 large node = more lines \u00b7 ring = orchestrator script \u00b7 bright = running now'],
+    [/ \u00b7 in basso: librerie usate da molti script/, ' \u00b7 bottom: libraries used by many scripts'],
+    [/ \u00b7 R e sbatch compresi/, ' \u00b7 incl. R and sbatch'],
+    [/^puntini = .*$/, 'dots = sessions · satellites = scripts: blue .py, pink .R, teal sbatch (relations in the network below)'],
+    [/nessun processo in corso/, 'no process running'],
+    [/ in corso\b/, ' running'],
+    [/ al lavoro\b/, ' working'],
+    [/^avanzamento /, 'progress '],
+    [/sessione al lavoro/, 'active session'],
+    [/sole \u221d \u221acore/, 'sun size \u221d \u221acores'],
+    [/ prodotti\b/, ' produced'],
+    [/(\d) token\b/, '$1 tokens'],
+    [/(\d) core\b/, '$1 cores'],
+    [/Macchine \u21c4 sessioni/, 'Machines \u21c4 sessions'],
+    [/Processi \u21c4 paper/, 'Processes \u21c4 studies'],
+    [/Pipeline e script/, 'Pipelines and scripts'],
+    [/Animazioni: s\u00ec/, 'Animations: on'],
+    [/Animazioni: no/, 'Animations: off'],
+    [/geolab \u00b7 calcolo e dati/, 'geolab \u00b7 computing and data'],
+    [/ \u00b7 simulata/, ''],
+    [/potenza di calcolo: /, 'computing power: '],
+    [/ GB di RAM/, ' GB of RAM'],
+    [/la dimensione del sole \u00e8 proporzionale alla radice dei core/, 'sun size is proportional to the square root of the cores'],
+    [/processi in corso/, 'processes running'],
+    [/potenza non nota/, 'power unknown'],
+    [/% di un core/, '% of one core'],
+    [/progetto: /, 'project: '],
+    [/al lavoro ora/, 'working now'],
+    [/^script (\w+) di /, '$1 script of '],
+    [/ righe \u00b7 modificato /, ' lines \u00b7 modified '],
+    [/ min fa/, ' min ago'],
+    [/ h fa/, ' h ago'],
+    [/ giorni fa/, ' days ago'],
+    [/ g fa/, ' d ago'],
+    [/^ora$/, 'now'],
+    [/simulazione: in esecuzione \(valore casuale\)/, 'running'],
+    [/in esecuzione adesso/, 'running now'],
+    [/processo attivo adesso/, 'process running now'],
+    [/processo fermo in questo momento/, ''],
+    [/ genera /, ' generates '],
+    [/^genera$/, 'generates'],
+    [/ file \u00b7 /, ' files \u00b7 '],
+    [/\bfile\b/, 'files'],
+    [/prodotti: /, 'produced: '],
+    [/\(misura parziale\)/, '(partial measurement)'],
+    [/script analizzati: /, 'scripts analysed: '],
+    [/\(vedi la rete qui sotto\)/, '(see the network below)'],
+    [/misurato /, 'measured '],
+    [/sessioni: /, 'sessions: '],
+    [/completamento non noto/, 'completion unknown'],
+    [/completamento /, 'completion '],
+    [/token spesi: /, 'tokens spent: '],
+    [/\(input, output e scritture in cache; esclusa la lettura della cache: /, '(input, output and cache writes; cache reads excluded: '],
+    [/ \u00b7 scadenza /, ' \u00b7 due '],
+    [/\bfase /, 'phase '],
+    [/\bpasso /, 'step '],
+    [/nessuno script analizzato/, 'no scripts analysed'],
+    [/ relazioni\b/, ' links'],
+    [/ \u00b7 versione vecchia/, ' \u00b7 old version'],
+    [/^usa: /, 'uses: '],
+    [/non usa altri script/, 'uses no other scripts'],
+    [/usato da: /, 'used by: '],
+    [/non \u00e8 usato da altri script \(punto d.ingresso\)/, 'not used by other scripts (entry point)'],
+    [/^PROCESSI$/, 'PROCESSES'],
+    [/^PAPER$/, 'STUDIES'],
+    [/^paper$/, 'studies'],
+    [/ paper(?= \u00b7|$)/, ' studies'],
+    [/\bmacchine\b/, 'machines'],
+    [/\bmacchina\b/, 'machine'],
+    [/\bprocessi\b/, 'processes'],
+    [/\bprocesso\b/, 'process'],
+    [/\bsessioni\b/, 'sessions'],
+    [/\bsessione\b/, 'session'],
+    [/\bferma\b/, 'idle']
+  ];
+  R = R.map(function (x) { return [new RegExp(x[0].source, 'g'), x[1]]; });
+  var memo = Object.create(null), nm = 0;
+  function T(s) {
+    if (typeof s !== 'string' || !s) return s;
+    var c = memo[s]; if (c !== undefined) return c;
+    var o = s.replace(/\b(dom|lun|mar|mer|gio|ven|sab) (\d\d)\/(\d\d) (\d\d:\d\d)/, function (m, g, d, mo, t) { return parseInt(d, 10) + ' ' + MES[parseInt(mo, 10) - 1] + ' ' + t; });
+    for (var i = 0; i < R.length; i++) o = o.replace(R[i][0], R[i][1]);
+    o = o.replace(/(?<![\w.,])\d[\d.,]*\d(?![\w.,])/g, function (n) { return n.replace(/[.,]/g, function (ch) { return ch === '.' ? ',' : '.'; }); });
+    if (nm++ > 6000) { memo = Object.create(null); nm = 0; }
+    memo[s] = o; return o;
+  }
+  window.__T = T;
+  var P = CanvasRenderingContext2D.prototype, ft = P.fillText, mt = P.measureText;
+  P.fillText = function (t, x, y, w) { return ft.call(this, T(String(t)), x, y, w); };
+  P.measureText = function (t) { return mt.call(this, T(String(t))); };
+  var busy = false;
+  function nodo(n) {
+    if (n.nodeType === 3) { if (n.parentNode && (n.parentNode.tagName === 'SCRIPT' || n.parentNode.tagName === 'STYLE')) return; var v = T(n.nodeValue); if (v !== n.nodeValue) n.nodeValue = v; return; }
+    if (n.nodeType !== 1) return;
+    if (n.tagName === 'SCRIPT' || n.tagName === 'STYLE') return;
+    ['title', 'aria-label'].forEach(function (a) { if (n.hasAttribute(a)) { var v = T(n.getAttribute(a)); if (v !== n.getAttribute(a)) n.setAttribute(a, v); } });
+    for (var c = n.firstChild; c; c = c.nextSibling) nodo(c);
+  }
+  var obs = new MutationObserver(function (recs) {
+    if (busy) return; busy = true;
+    recs.forEach(function (r) {
+      if (r.type === 'childList') r.addedNodes.forEach(nodo);
+      else if (r.type === 'characterData') nodo(r.target);
+      else if (r.type === 'attributes') nodo(r.target);
+    });
+    obs.takeRecords(); busy = false;
+  });
+  obs.observe(document.documentElement, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ['title', 'aria-label'] });
+})();
+</script><style>:root[data-tema="hud"]{--page:#000;--surface:#050407;--grid:#1a1a1f;--axis:#34343c}:root[data-tema="hud"] body{background:#000}:root[data-tema="hud"] :is(.card,.tile,.pc,.mat,figure,.mini,.panel){background:linear-gradient(var(--s1),var(--s1)) top left/11px 1px no-repeat,linear-gradient(var(--s1),var(--s1)) top left/1px 11px no-repeat,linear-gradient(var(--s1),var(--s1)) bottom right/11px 1px no-repeat,linear-gradient(var(--s1),var(--s1)) bottom right/1px 11px no-repeat,#000}:root[data-tema="hud"] .nav{background:rgba(0,0,0,.9)}</style></head>
+<body>
+<main id="app"></main>
+<script>
+(function () {
+  const root = document.documentElement;
+  const get = () => root.getAttribute('data-tema') === 'classico' ? 'classico' : 'hud';
+  const el = (t, c, txt) => { const e = document.createElement(t); if (c) e.className = c; if (txt != null) e.textContent = txt; return e; };
+  const ridisegna = [];
+  const HUD = window.HUD = {
+    tema: get,
+    imposta(t) {
+      root.setAttribute('data-tema', t);
+      try { localStorage.setItem('tema', t); } catch (e) {}
+      document.querySelectorAll('[data-hud-btn]').forEach(aggiorna);
+      if (window.labRedraw) window.labRedraw(true);
+      ridisegna.forEach(f => f());
+    },
+    bottone() {
+      const b = el('button'); b.type = 'button'; b.setAttribute('data-hud-btn', '');
+      aggiorna(b); b.addEventListener('click', () => HUD.imposta(get() === 'hud' ? 'classico' : 'hud'));
+      return b;
+    },
+    barra(o) {
+      const d = el('div', 'hudbar hud-only');
+      d.append(el('span', '', o.sx));
+      const live = el('span', 'live'); live.append(el('i'), document.createTextNode('LIVE')); d.append(live);
+      const kv = el('span', 'kv');
+      (o.dx || []).forEach(([k, v, w]) => { const s = el('span', '', k); s.append(el('b', w || '', v)); kv.append(s); });
+      d.append(kv);
+      return d;
+    },
+    hero(o) {
+      const sec = el('section', 'hero hud-only');
+      const p1 = el('div', 'panel'), h1 = el('div', 'ph'), cv = el('canvas');
+      cv.setAttribute('aria-label', o.titolo + (o.rete ? ': mappa animata dei processi in corso sulla macchina e delle sessioni e dei progetti a cui sono collegati (stessi dati dell\'elenco accanto)' : ': figura decorativa, gira piu\' veloce quando ci sono processi al lavoro'));
+      const b1 = el('b', '', o.titolo); h1.append(b1, el('span', '', o.destra || '')); p1.append(h1, cv);
+      if (o.fisso) { HUD.sim = true; HUD.web = true; }
+      if (o.rete && !o.fisso) { const tg = el('button', 'tab'); tg.type = 'button';
+        const agg = () => { tg.textContent = 'Simulazione: ' + (HUD.sim ? 'sì' : 'no'); tg.classList.toggle('on', HUD.sim); tg.title = 'Mostra in tono leggero, come se stessero funzionando, i processi e i flussi che non girano davvero'; }; agg();
+        tg.addEventListener('click', () => { HUD.sim = !HUD.sim; try { localStorage.setItem('sim', HUD.sim ? '1' : '0'); } catch (e) {} agg(); ridisegna.forEach(f => f()); }); h1.append(tg); }
+      const p2 = el('div', 'panel'), h2 = el('div', 'ph'), tm = el('div', 'term');
+      if (o.term) h2.append(el('b', '', o.term.titolo), el('span', '', o.term.destra || ''));
+      ((o.term && o.term.righe) || []).forEach(r => {
+        if (r.g) { const gh = el('div', 'tgrp' + (r.warn ? ' warn' : '')); gh.append(el('b', '', r.g), el('span', '', r.n || '')); tm.append(gh); return; }
+        const l = el('div', 'ln ' + (r.k || '') + (r.liv ? ' fig' : '')); if (r.liv) l.style.marginLeft = (r.liv * 22) + 'px'; l.append(el('span', 'v', r.v), el('span', 't', r.t));
+        const s = el('span', 's ' + (r.k || '')); if (r.rc != null) s.append(el('b', 'rc ' + (r.rc ? 'on' : 'off'), r.rc ? 'RC ✓' : 'RC ✕'), document.createTextNode(' ')); s.append(document.createTextNode(r.s)); l.append(s); if (r.rel) l.append(el('div', 'relr', r.rel)); if (r.d) { const dt = el('div', 'dt', r.d); dt.title = 'Clic per aprire o chiudere il testo completo'; dt.addEventListener('click', () => dt.classList.toggle('open')); l.append(dt); } l.title = r.t; tm.append(l);
+      });
+      const fin = el('div', 'ln'); fin.append(el('span', 'v', ''), el('span', 't cur', '_'), el('span', 's', '')); tm.append(fin);
+      p2.append(h2, tm); sec.append(p1); (Array.isArray(o.tra) ? o.tra : [o.tra]).forEach(t => { if (t) sec.append(t); }); if (o.term) sec.append(p2);
+      if (o.rete) rete(cv, o.rete, p1); else poliedro(cv, o.attivi || 0, o.tags || []);
+      return sec;
+    },
+    pipeline(o) {
+      const sec = el('section', 'hero hud-only'), p = el('div', 'panel'), h = el('div', 'ph'), cv = el('canvas'), tabs = el('span', 'tabs'), tog = el('button', 'tab');
+      cv.setAttribute('aria-label', o.titolo + ': rete degli script .py di ogni processo, con le relazioni tra uno script e l’altro');
+      cv.style.height = '560px';
+      h.append(el('b', '', o.titolo), tabs, tog); p.append(h, cv); sec.append(p);
+      pipeline(cv, o, p, tabs, tog); return sec;
+    },
+    flusso(o) {
+      const sec = el('section', 'hero hud-only'), p = el('div', 'panel'), h = el('div', 'ph'), cv = el('canvas');
+      cv.setAttribute('aria-label', o.titolo + ': grafico animato dei processi (dimensione = MB prodotti) che generano i paper (dimensione = token spesi, anello = % di completamento)');
+      cv.style.height = Math.max(320, Math.max(o.f.processamenti.length, o.f.paper.length, 1) * 175 + 100) + 'px';
+      h.append(el('b', '', o.titolo), el('span', '', o.destra || '')); p.append(h, cv); sec.append(p);
+      flusso(cv, o.f, p); return sec;
+    },
+  };
+  HUD.sim = true; try { HUD.sim = localStorage.getItem('sim') !== '0'; } catch (e) {}
+  function aggiorna(b) { b.textContent = 'Tema: ' + (get() === 'hud' ? 'HUD' : 'classico'); b.setAttribute('aria-pressed', get() === 'hud'); b.title = 'Passa dallo stile HUD a quello classico e viceversa (tasto T)'; sincronizzaLink(); }
+  function sincronizzaLink() {
+    document.querySelectorAll('a[href]').forEach(a => {
+      const h = a.getAttribute('href');
+      if (!h || h[0] === '#' || /^[a-z][a-z0-9+.-]*:/i.test(h) || !/\.html?(#|\?|$)/i.test(h)) return;
+      const [base, fr] = h.split('#'); const nb = base.replace(/([?&])tema=[a-z]+&?/, '$1').replace(/[?&]$/, '');
+      a.setAttribute('href', nb + (nb.includes('?') ? '&' : '?') + 'tema=' + get() + (fr != null ? '#' + fr : ''));
+    });
+  }
+  document.addEventListener('keydown', e => {
+    if (HUD.web || e.key.toLowerCase() !== 't' || e.ctrlKey || e.metaKey || e.altKey || /^(input|textarea|select)$/i.test((e.target.tagName || ''))) return;
+    HUD.imposta(get() === 'hud' ? 'classico' : 'hud');
+  });
+  window.addEventListener('load', sincronizzaLink);
+
+  function rete(cv, r, pan) {
+    const ctx = cv.getContext('2d');
+    const css = n => getComputedStyle(root).getPropertyValue(n).trim();
+    const rgba = (hex, a) => { hex = (hex || '#a78bfa').replace('#', ''); if (hex.length === 3) hex = hex.replace(/./g, '$&$&'); const n = parseInt(hex, 16); return `rgba(${n >> 16 & 255},${n >> 8 & 255},${n & 255},${a})`; };
+    const tip = el('div', 'rtip'); tip.style.display = 'none'; pan.append(tip);
+    const h32 = s => { let h = 2166136261; for (const ch of String(s)) { h ^= ch.charCodeAt(0); h = Math.imul(h, 16777619); } return h >>> 0; }, rnd = s => (h32(s) % 10000) / 10000;
+    const esc = s => String(s == null ? '' : s).replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+    const tr = (s, n) => s.length > n ? s.slice(0, Math.max(1, n - 1)) + '…' : s;
+    const durata = s => s < 90 ? Math.round(s) + ' s' : s < 5400 ? Math.round(s / 60) + ' min' : s < 172800 ? (s / 3600).toFixed(1).replace('.', ',') + ' h' : Math.round(s / 86400) + ' g';
+    const cl = (v, a, b) => Math.max(a, Math.min(b, v));
+    let W = 0, H = 0, t0 = performance.now(), tt = 0, hits = [];
+    const cpuS = {}, memS = {};
+    const gst = g => { const LE = 20 + (h32(g.id) % 11), fe = tt / LE + (h32(g.id) % 100) / 100, ep = Math.floor(fe), acceso = rnd(g.id + ':' + ep) < .72,
+        env = acceso ? Math.pow(Math.sin(Math.PI * (fe - ep)), .6) : 0, cs = .1 + 1.05 * env * (.55 + .45 * rnd(g.id + 'c' + ep)); let scr = 0;
+      if ((g.scripts || []).length) [0, 1].forEach(tr2 => { const f2 = tt / 18 + tr2 * .5 + (h32(g.id) % 50) / 50, i2 = Math.floor(f2); if (rnd(g.id + 'e' + tr2 + i2) <= .62) scr += Math.sin(Math.PI * (f2 - i2)); });
+      return { env, cs, scr }; };
+    const stato = { x: -1, y: -1 };
+    function misura() {
+      const dpr = Math.min(2, window.devicePixelRatio || 1);
+      W = cv.clientWidth; H = cv.clientHeight; if (!W || !H) return false;
+      if (cv.width !== Math.round(W * dpr) || cv.height !== Math.round(H * dpr)) { cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); }
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0); return true;
+    }
+    function disegna() {
+      if (!misura()) return;
+      const acc = css('--s1') || '#a78bfa', ink = css('--ink') || '#ece9fb', mut = css('--muted') || '#8b86a8', ok = css('--ok') || '#4ade80',
+        warn = css('--warn') || '#fbbf24', bad = css('--bad') || '#f87171', mono = css('--mono') || 'monospace';
+      ctx.clearRect(0, 0, W, H); hits = [];
+      const pulse = (x1, y1, x2, y2, u, col, rad, al) => { const x = x1 + (x2 - x1) * u, y = y1 + (y2 - y1) * u; al = al == null ? .95 : al; ctx.fillStyle = rgba(col, al); ctx.shadowColor = col; ctx.shadowBlur = al > .6 ? 8 : 0; ctx.beginPath(); ctx.arc(x, y, rad, 0, 7); ctx.fill(); ctx.shadowBlur = 0; };
+      const mq0 = r.macchine.map((m, i) => (HUD.sim && (m.atteso || !m.fresca || (m.cpu || 0) < 5)) ? Object.assign({}, m, { fresca: true, atteso: false, sim: true, ncpu: m.ncpu || [24, 16, 8][i % 3], mem_gb: m.mem_gb || [32, 32, 16][i % 3] }) : m);
+      const gq = (r.ghost || []).map((g, i) => (HUD.sim && !g.reale) ? Object.assign({}, g, { macchina: g.fissa || mq0[i % mq0.length].nome }) : g);
+      const dtq = Math.min(1, Math.max(0, tt - (cpuS._t == null ? tt : cpuS._t))); cpuS._t = tt;
+      const mq = mq0.map((m, i) => { if (!m.sim) return m;
+        let carico = 0; gq.filter(g => !g.reale && g.macchina === m.nome).forEach(g => { const L = gst(g); carico += L.cs * 36 + L.scr * 6; });
+        const target = cl(8 + carico + 3 * Math.sin(tt * .05 + i * 2), 4, 96), prev = cpuS[m.nome] == null ? target : cpuS[m.nome], cur = prev + (target - prev) * (1 - Math.exp(-dtq / 7));
+        cpuS[m.nome] = cur;
+        const mt = 34 + .3 * cur + 8 * Math.sin(tt * .02 + i * 1.7), mp = memS[m.nome] == null ? mt : memS[m.nome], mc = mp + (mt - mp) * (1 - Math.exp(-dtq / 25)); memS[m.nome] = mc;
+        return Object.assign({}, m, { cpu: cur, mem: mc }); });
+      let ms = mq.slice(); if (W < 600) { const f = ms.filter(m => m.fresca); ms = f.length ? f : ms.slice(0, 1); }
+      const maxC = Math.max(1, ...ms.map(m => m.ncpu || 0)), ba = H - 72, cy = ba / 2 + 16, Rmax = Math.min(46, ba * .17);
+      const info = ms.map(m => {
+        const ss = r.sessioni.filter(s => s.macchina === m.nome), pp = r.processi.filter(x => x.macchina === m.nome);
+        const ids = r.progetti.filter(p => ss.some(s => s.progetto === p.id) || pp.some(x => x.progetto === p.id) || (HUD.sim && gq.some(g => !g.reale && g.macchina === m.nome && g.progetto === p.id))).map(p => p.id);
+        return { m, ss, pp, ids };
+      });
+      const pesi = info.map(o => Math.max(2.6, 2.2 + o.ids.length * .55)), tot = pesi.reduce((a, b) => a + b, 0);
+      let xa = 0; info.forEach((o, i) => { o.x0 = xa; o.rw = W * pesi[i] / tot; xa += o.rw; o.cx = o.x0 + o.rw / 2; });
+      ctx.lineCap = 'round';
+      info.forEach((o, mi) => {
+        const m = o.m, cx = o.cx, rw = o.rw, spento = m.atteso || !m.fresca, col = css('--m' + ((m.mc || 0) + 1)) || acc;
+        const sunR = m.ncpu ? 11 + (Rmax - 11) * Math.sqrt(m.ncpu / maxC) : 12;
+        const n = Math.max(1, o.ids.length);
+        let RX = Math.min(Math.max(sunR + 46, Math.min(rw / 2 - 100, 56 + 16 * n)), Math.max(sunR + 30, rw / 2 - 40)), RY = Math.max(sunR + 40, ba / 2 - 22);
+        ctx.globalAlpha = spento ? .42 : 1;
+        if (mi > 0) { ctx.strokeStyle = rgba(acc, .12); ctx.setLineDash([2, 5]); ctx.beginPath(); ctx.moveTo(o.x0, 8); ctx.lineTo(o.x0, ba + 4); ctx.stroke(); ctx.setLineDash([]); }
+        const cpu = cl(m.cpu || 0, 0, 100), mem = cl(m.mem || 0, 0, 100);
+        ctx.textBaseline = 'middle'; ctx.textAlign = 'left'; ctx.fillStyle = col; ctx.beginPath(); ctx.arc(o.x0 + 14, 12, 3, 0, 7); ctx.fill();
+        ctx.fillStyle = ink; ctx.font = '600 10.5px ' + mono; ctx.fillText(tr(String(m.nome).toUpperCase(), Math.floor((rw - 40) / 7)), o.x0 + 24, 12);
+        const potenza = (m.ncpu ? m.ncpu + ' core' : 'potenza non nota') + (m.mem_gb ? ' · ' + m.mem_gb + ' GB' : '') + (m.gpu ? ' · ' + m.gpu : '');
+        const sub = m.atteso ? 'non collegata · ' + potenza : (m.fresca ? potenza + (m.sim ? ' · simulata' : '') + ' · CPU ' + Math.round(cpu) + '% · RAM ' + Math.round(mem) + '%' : 'ferma da ' + durata(Date.now() / 1000 - (m.t || 0)) + ' · ' + potenza);
+        ctx.fillStyle = mut; ctx.font = '9px ' + mono; ctx.fillText(tr(sub, Math.floor((rw - 24) / 5.3)), o.x0 + 14, 26);
+        const P = {};
+        o.ids.forEach((id, i) => { const pr = r.progetti.find(p => p.id === id), a = -Math.PI / 2 + i * 2 * Math.PI / n; P[id] = Object.assign({}, pr, { a, x: cx + Math.cos(a) * RX, y: cy + Math.sin(a) * RY, ns: 0, att: 0, np: 0 }); });
+        o.ss.forEach(s => { const p = P[s.progetto]; if (p) { p.ns++; if (s.attiva) p.att++; } });
+        o.pp.forEach(x => { const p = P[x.progetto]; if (p) p.np++; });
+        Object.values(P).forEach((p, i) => {
+          const vivo = p.att > 0 || p.np > 0;
+          ctx.strokeStyle = rgba(col, vivo ? .34 : .1); ctx.lineWidth = vivo ? 1.2 : .8; ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(p.x, p.y); ctx.stroke();
+          if (p.att > 0) pulse(p.x, p.y, cx, cy, (tt * (.18 + .1 * p.att) + i * .37) % 1, acc, 1.9); else if (HUD.sim && p.ns > 0 && !spento) pulse(p.x, p.y, cx, cy, (tt * .09 + i * .37) % 1, acc, 1.4, .3);
+        });
+        const resp = 1 + .04 * Math.sin(tt * (1 + cpu / 25));
+        const gr = ctx.createRadialGradient(cx, cy, sunR * .2, cx, cy, sunR * resp * 2); gr.addColorStop(0, rgba(col, .34)); gr.addColorStop(1, rgba(col, 0));
+        ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(cx, cy, sunR * resp * 2, 0, 7); ctx.fill();
+        if (m.ncpu) { ctx.fillStyle = rgba(col, .88); ctx.shadowColor = col; ctx.shadowBlur = 14; ctx.beginPath(); ctx.arc(cx, cy, sunR * resp, 0, 7); ctx.fill(); ctx.shadowBlur = 0; }
+        else { ctx.setLineDash([3, 3]); ctx.strokeStyle = col; ctx.lineWidth = 1.4; ctx.beginPath(); ctx.arc(cx, cy, sunR, 0, 7); ctx.stroke(); ctx.setLineDash([]); }
+        [[sunR + 6, cpu, ink], [sunR + 12, mem, warn]].forEach(([rr, v, c2]) => {
+          ctx.lineWidth = 2.4; ctx.strokeStyle = rgba(c2, .16); ctx.beginPath(); ctx.arc(cx, cy, rr, 0, 7); ctx.stroke();
+          if (!m.atteso) { ctx.strokeStyle = rgba(c2, .95); ctx.beginPath(); ctx.arc(cx, cy, rr, -Math.PI / 2, -Math.PI / 2 + Math.max(.04, v / 100 * 2 * Math.PI)); ctx.stroke(); }
+        });
+        if (sunR >= 22 && m.fresca) { ctx.fillStyle = '#0a0814'; ctx.font = '600 11px ' + mono; ctx.textAlign = 'center'; ctx.fillText(Math.round(cpu) + '%', cx, cy); }
+        hits.push({ x: cx, y: cy, r: sunR + 14, info: ['<b>' + esc(m.nome) + '</b>', 'potenza di calcolo: ' + (m.ncpu ? m.ncpu + ' core' : 'non nota') + (m.mem_gb ? ', ' + m.mem_gb + ' GB di RAM' : '') + (m.gpu ? ', ' + esc(m.gpu) : ''),
+          'la dimensione del sole è proporzionale alla radice dei core', m.atteso ? 'macchina prevista, ancora senza dati' : m.fresca ? 'CPU ' + Math.round(cpu) + '% · RAM ' + Math.round(mem) + '%' : '<span class="rbad">ferma: ultimo aggiornamento ' + durata(Date.now() / 1000 - (m.t || 0)) + ' fa</span>', (HUD.web ? '' : o.pp.length + ' processi in corso · ') + o.ss.length + ' sessioni'] });
+        const perP = {}; let senza = 0; const senzaTot = o.pp.filter(x => !P[x.progetto]).length, tf = cl((sunR + 30) / Math.min(RX, RY), .45, .8);
+        o.pp.forEach((x, i) => {
+          const p = P[x.progetto]; let px, py;
+          if (p) { const j = perP[p.id] = (perP[p.id] || 0) + 1, mm = p.np, off = (j - 1 - (mm - 1) / 2) * 16, tx = -Math.sin(p.a), ty = Math.cos(p.a);
+            px = cx + Math.cos(p.a) * RX * tf + tx * off * 1.1; py = cy + Math.sin(p.a) * RY * tf + ty * off; }
+          else { px = cx + (senza++ - (senzaTot - 1) / 2) * 40; py = cy + sunR + 36; }
+          px += Math.sin(tt * .9 + i * 2) * 1.6; py += Math.cos(tt * .8 + i * 3) * 1.6;
+          const c = x.cpu == null ? 0 : x.cpu, pc = x.sessione ? ok : p ? warn : bad, sz = 5.5 + Math.min(6, Math.sqrt(c) * 6), to = p || { x: cx, y: cy };
+          ctx.setLineDash(p ? [] : [3, 3]); ctx.strokeStyle = rgba(pc, .45); ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(px, py); ctx.lineTo(to.x, to.y); ctx.stroke(); ctx.setLineDash([]);
+          pulse(px, py, to.x, to.y, (tt * (.22 + Math.min(2.5, c * 2)) + i * .29) % 1, pc, 1.8 + Math.min(1.6, c));
+          ctx.save(); ctx.translate(px, py); ctx.rotate(Math.PI / 4 + tt * (.15 + c)); ctx.fillStyle = rgba(pc, .22); ctx.strokeStyle = pc; ctx.lineWidth = 1.4; ctx.shadowColor = pc; ctx.shadowBlur = c > .03 ? 12 : 5;
+          ctx.fillRect(-sz / 2, -sz / 2, sz, sz); ctx.strokeRect(-sz / 2, -sz / 2, sz, sz); ctx.restore(); ctx.shadowBlur = 0;
+          ctx.fillStyle = ink; ctx.font = '9.5px ' + mono; ctx.textAlign = 'center'; ctx.textBaseline = 'top'; ctx.fillText(tr(x.script || x.nome, 20), px, py + sz / 2 + 4); ctx.textBaseline = 'middle';
+          hits.push({ x: px, y: py, r: 13, info: ['<b>' + esc(x.script || x.nome) + '</b> <span class="rm">pid ' + x.pid + ' · ' + esc(m.nome) + '</span>', esc(tr(x.cmd || '', 110)),
+            'in corso da ' + durata(Date.now() / 1000 - x.avvio) + ' · CPU ' + (x.cpu == null ? '…' : (x.cpu * 100).toFixed(0) + '% di un core') + ' · ' + x.mem_mb + ' MB',
+            x.sessione ? 'sessione: ' + esc(x.sessioneTitolo) + (x.via === 'cartella' ? ' (probabile, dalla cartella)' : '') : (p ? 'sessione non individuabile (processo avviato da una sessione chiusa o da un’attività pianificata)' : '<span class="rbad">nessuna sessione e nessun progetto collegati</span>'),
+            p ? 'progetto: ' + esc(p.titolo) : ''].filter(Boolean) });
+        });
+        if (HUD.sim) {
+          const gh = gq.filter(g => g.macchina === m.nome && !g.reale && P[g.progetto]);
+          gh.forEach((g, k) => {
+            const p = P[g.progetto], mm = p.np + gh.filter(z => z.progetto === g.progetto).length, jj = p.np + gh.filter((z, zi) => zi <= k && z.progetto === g.progetto).length, off = (jj - 1 - (mm - 1) / 2) * 16;
+            const { env, cs } = gst(g), sz = 5.5 + Math.min(6, Math.sqrt(cs) * 6);
+            const tg2 = Math.min(.86, tf + .2), gx = cx + Math.cos(p.a) * RX * tg2 - Math.sin(p.a) * off * 1.1 + Math.sin(tt * .7 + k) * 1.4, gy = cy + Math.sin(p.a) * RY * tg2 + Math.cos(p.a) * off + Math.cos(tt * .6 + k) * 1.4;
+            if (env > .15) { const hg = ctx.createRadialGradient(gx, gy, 2, gx, gy, 34); hg.addColorStop(0, rgba(acc, .38 * env)); hg.addColorStop(1, rgba(acc, 0)); ctx.fillStyle = hg; ctx.beginPath(); ctx.arc(gx, gy, 34, 0, 7); ctx.fill(); }
+            ctx.setLineDash([3, 3]); ctx.strokeStyle = rgba(acc, .22 + .35 * env); ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(gx, gy); ctx.lineTo(p.x, p.y); ctx.stroke(); ctx.setLineDash([]);
+            pulse(gx, gy, p.x, p.y, (tt * (.12 + Math.min(2.5, cs * 2)) + k * .31) % 1, acc, 1.5 + Math.min(1.6, cs), .3 + .5 * env);
+            if (env > .25) pulse(gx, gy, p.x, p.y, (tt * (.12 + Math.min(2.5, cs * 2)) + k * .31 + .5) % 1, acc, 1.4, .25 + .4 * env);
+            (g.scripts || []).length && [0, 1].forEach(tr2 => {
+              const L2 = 18, f2 = tt / L2 + tr2 * .5 + (h32(g.id) % 50) / 50, i2 = Math.floor(f2);
+              if (rnd(g.id + 'e' + tr2 + i2) > .62) return;
+              const e2 = Math.sin(Math.PI * (f2 - i2)), nm = g.scripts[Math.floor(rnd(g.id + 'n' + tr2 + i2) * g.scripts.length)], fr = .35 + .4 * rnd(g.id + 'f' + tr2 + i2), pe = (rnd(g.id + 'p' + tr2 + i2) - .5) * 44;
+              const ex = gx + (p.x - gx) * fr - (p.y - gy) / (Math.hypot(p.x - gx, p.y - gy) + .1) * pe, ey = gy + (p.y - gy) * fr + (p.x - gx) / (Math.hypot(p.x - gx, p.y - gy) + .1) * pe;
+              pulse(ex, ey, p.x, p.y, (f2 * 1.7) % 1, acc, 1.3, .55 * e2);
+              ctx.save(); ctx.translate(ex, ey); ctx.rotate(Math.PI / 4 + tt * .5); ctx.globalAlpha = .75 * e2; ctx.fillStyle = rgba(acc, .6); ctx.shadowColor = acc; ctx.shadowBlur = 8; ctx.fillRect(-2.6, -2.6, 5.2, 5.2); ctx.restore(); ctx.shadowBlur = 0;
+              ctx.globalAlpha = .65 * e2; ctx.fillStyle = ink; ctx.font = 'italic 8.5px ' + mono; ctx.textAlign = 'center'; ctx.textBaseline = 'top'; ctx.fillText(tr(nm, 20), ex, ey + 6); ctx.globalAlpha = spento ? .42 : 1; ctx.textBaseline = 'middle';
+            });
+            ctx.save(); ctx.translate(gx, gy); ctx.rotate(Math.PI / 4 + tt * (.15 + cs * .6)); ctx.setLineDash([3, 2]); ctx.strokeStyle = rgba(acc, .6); ctx.fillStyle = rgba(acc, .14); ctx.lineWidth = 1.3; ctx.shadowColor = acc; ctx.shadowBlur = 6;
+            ctx.fillRect(-sz / 2, -sz / 2, sz, sz); ctx.strokeRect(-sz / 2, -sz / 2, sz, sz); ctx.setLineDash([]); ctx.restore(); ctx.shadowBlur = 0;
+            ctx.fillStyle = rgba(ink, .4 + .35 * env); ctx.font = 'italic 9px ' + mono; ctx.textAlign = 'center'; ctx.textBaseline = 'top'; ctx.fillText(tr(g.titolo, HUD.web ? 24 : 18) + (HUD.web ? '' : ' (sim.)') + (env > .35 ? ' ' + Math.round(cs * 100) + '%' : ''), gx, gy + sz / 2 + 4); ctx.textBaseline = 'middle';
+            hits.push({ x: gx, y: gy, r: 13, info: HUD.web ? ['<b>' + esc(g.titolo) + '</b>', 'CPU ' + Math.round(cs * 100) + '% di un core', 'progetto: ' + esc(p.titolo)] : ['<b>' + esc(g.titolo) + '</b> <span class="rm">simulazione</span>', 'Processo simulato: non è in esecuzione adesso, i valori sono casuali (CPU ' + Math.round(cs * 100) + '% di un core).', 'Quando un suo script gira davvero compare qui un processo vero, con colori pieni.', 'progetto: ' + esc(p.titolo)] });
+          });
+        }
+        Object.values(P).forEach(p => {
+          const vivo = p.att > 0 || p.np > 0, rr = 4.5 + (p.ns ? 1 : 0);
+          ctx.fillStyle = vivo ? acc : rgba(acc, .22); ctx.strokeStyle = rgba(acc, vivo ? .95 : .5); ctx.lineWidth = 1.4; ctx.shadowColor = acc; ctx.shadowBlur = vivo ? 12 : 0;
+          ctx.beginPath(); ctx.arc(p.x, p.y, rr, 0, 7); ctx.fill(); ctx.stroke(); ctx.shadowBlur = 0;
+          if (HUD.sim && !spento && p.ns) { const fp = tt / 10 + (h32(p.id) % 100) / 100, ip = Math.floor(fp), up = fp - ip; if (rnd(p.id + ':' + ip) < .45) { ctx.strokeStyle = rgba(acc, .45 * (1 - up)); ctx.lineWidth = 1.2; ctx.beginPath(); ctx.arc(p.x, p.y, rr + 2 + 26 * up, 0, 7); ctx.stroke(); } }
+          const ses = o.ss.filter(s => s.progetto === p.id);
+          ses.forEach((s, k) => {
+            const a = k * 2 * Math.PI / ses.length + tt * (s.attiva ? .9 : .25) * (k % 2 ? -1 : 1), rad = 12 + (ses.length > 6 ? 5 : 0) + (k % 2) * 3, sx = p.x + Math.cos(a) * rad, sy = p.y + Math.sin(a) * rad;
+            const c2 = s.attiva ? acc : s.attesa ? warn : mut, lite = HUD.sim && !s.attiva && Math.sin(tt * .42 + (h32(s.id) % 100)) > .86;
+            ctx.fillStyle = s.attiva ? '#ffffff' : lite ? rgba(acc, 1) : rgba(c2, s.attesa ? .95 : .55); ctx.shadowColor = lite ? acc : c2; ctx.shadowBlur = s.attiva ? 9 : lite ? 8 : 0;
+            ctx.beginPath(); ctx.arc(sx, sy, s.attiva ? 2.4 : lite ? 2.4 : 1.7, 0, 7); ctx.fill(); ctx.shadowBlur = 0; if (s.rc === false) { ctx.strokeStyle = rgba(bad, .9); ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(sx, sy, 4.2, 0, 7); ctx.stroke(); }
+            hits.push({ x: sx, y: sy, r: 6, info: HUD.web ? ['<b>' + esc(s.titolo) + '</b>', 'progetto: ' + esc(p.titolo) + ' · ' + esc(m.nome)] : ['<b>' + esc(s.titolo) + '</b>', s.attiva ? 'al lavoro ora' : s.attesa ? 'aspetta una tua risposta' : 'ferma', s.rc === true ? 'Remote Control attivo' : s.rc === false ? '<span class="rbad">Remote Control SPENTO</span>' : 'Remote Control non noto', 'progetto: ' + esc(p.titolo) + ' · ' + esc(m.nome)], pri: 1 });
+          });
+          const dx = Math.cos(p.a), left = dx < -.25, mid = Math.abs(dx) <= .25;
+          ctx.textAlign = mid ? 'center' : left ? 'right' : 'left'; ctx.fillStyle = vivo ? ink : mut; ctx.font = (vivo ? '600 ' : '') + '9.5px ' + mono;
+          const room = mid ? 150 : (left ? p.x - o.x0 : o.x0 + rw - p.x) - 30, ly = mid ? p.y + (Math.sin(p.a) < 0 ? -26 : 26) : p.y;
+          ctx.fillText(tr(p.titolo, Math.max(6, Math.floor(room / 5.8))), p.x + (mid ? 0 : (left ? -1 : 1) * 24), ly);
+          hits.push({ x: p.x, y: p.y, r: 10, info: ['<b>' + esc(p.titolo) + '</b> <span class="rm">' + esc(m.nome) + '</span>', p.ns + ' session' + (p.ns === 1 ? 'e' : 'i') + (p.att ? ' · ' + p.att + ' al lavoro' : ''), p.np ? p.np + ' process' + (p.np === 1 ? 'o' : 'i') + ' in corso' : 'nessun processo in corso', p.pct != null ? 'avanzamento ' + Math.round(p.pct * 100) + '%' : ''].filter(Boolean) });
+        });
+        ctx.globalAlpha = 1;
+      });
+      ctx.textAlign = 'left'; ctx.font = '9px ' + mono; ctx.textBaseline = 'middle';
+      const ty = H - (W < 560 ? 48 : 38), stp = Math.min(150, (W - 24) / Math.max(1, r.task.length));
+      r.task.forEach((a, k) => {
+        const x = 14 + k * stp, run = a.in_esecuzione, col = !a.attivo ? mut : (!a.ok ? bad : run ? acc : mut);
+        ctx.save(); ctx.translate(x, ty); ctx.rotate(Math.PI / 4); ctx.strokeStyle = col; ctx.fillStyle = run ? col : 'transparent'; ctx.lineWidth = 1.2; ctx.shadowColor = col; ctx.shadowBlur = run ? 10 : 0;
+        const q = run ? 4.4 + .8 * Math.sin(tt * 4) : 4; ctx.fillRect(-q / 2, -q / 2, q, q); ctx.strokeRect(-q / 2, -q / 2, q, q); ctx.restore(); ctx.shadowBlur = 0;
+        ctx.fillStyle = run ? ink : mut; ctx.fillText(tr(a.nome.replace(/^(Cruscotto|HPO)_/i, '').replace(/_/g, ' '), Math.floor((stp - 22) / 5.2)), x + 9, ty + .5);
+        hits.push({ x, y: ty, r: 9, info: ['<b>' + esc(a.nome) + '</b> <span class="rm">attività Windows</span>', esc(a.descrizione || ''), run ? 'in esecuzione adesso' : (a.attivo ? 'pianificata' : 'disattivata') + (a.attivo && !a.ok ? ' · <span class="rbad">ultimo esito con errore</span>' : '')].filter(Boolean) });
+      });
+      ctx.font = '9px ' + mono; ctx.textBaseline = 'middle';
+      const voci = HUD.web ? [['dot', acc, 'sessione al lavoro'], ['sun', mut, 'sole ∝ √core']] : [['dot', acc, 'sessione al lavoro'], ['dot', warn, 'aspetta te'], ['rom', ok, 'processo+sessione'], ['rom', warn, 'solo progetto'], ['rom', bad, 'orfano'], ['rom', mut, 'attività Windows'], ['sun', mut, 'sole ∝ √core'], ['ring', bad, 'RC spento'], ['sim', mut, 'tono leggero = simulazione']];
+      let lx = 14, ly = H - 12; const larg = voci.map(v => 12 + ctx.measureText(v[2]).width + 14), totL = larg.reduce((a, b) => a + b, 0), due = totL > W - 20, meta = Math.ceil(voci.length / 2);
+      voci.forEach(([f, col, txt], k) => {
+        if (due) { ly = k < meta ? H - 20 : H - 8; if (k === meta) lx = 14; }
+        ctx.fillStyle = col; ctx.strokeStyle = col; ctx.beginPath();
+        if (f === 'dot') ctx.arc(lx + 3, ly, 2.6, 0, 7); else if (f === 'sun') ctx.arc(lx + 3, ly, 3.8, 0, 7); else if (f === 'ring') ctx.arc(lx + 3, ly, 3.6, 0, 7); else { ctx.moveTo(lx + 3, ly - 4); ctx.lineTo(lx + 7, ly); ctx.lineTo(lx + 3, ly + 4); ctx.lineTo(lx - 1, ly); ctx.closePath(); }
+        f === 'rom' || f === 'ring' || f === 'sim' ? ctx.stroke() : ctx.fill(); ctx.fillStyle = mut; ctx.textAlign = 'left'; ctx.fillText(txt, lx + 12, ly); lx += larg[k];
+      });
+      if (!r.processi.length && !(HUD.sim && gq.some(g => !g.reale))) { ctx.fillStyle = mut; ctx.font = '9.5px ' + mono; ctx.textAlign = 'right'; ctx.fillText('nessun processo .py in corso in questo momento', W - 14, H - (W < 560 ? 60 : 56)); }
+      if (stato.x >= 0) mostraTip();
+    }
+    function mostraTip() {
+      let best = null, bd = 1e9;
+      hits.forEach(h => { const d = Math.hypot(h.x - stato.x, h.y - stato.y) - (h.pri ? 4 : 0); if (d < h.r && d < bd) { bd = d; best = h; } });
+      if (!best) { tip.style.display = 'none'; return; }
+      tip.innerHTML = best.info.map(l => '<div>' + l + '</div>').join('');
+      tip.style.display = 'block';
+      const pr = cv.getBoundingClientRect(), pp = pan.getBoundingClientRect(), tw = tip.offsetWidth, th = tip.offsetHeight;
+      let x = best.x + (pr.left - pp.left) + 14, y = best.y + (pr.top - pp.top) + 12;
+      if (x + tw > pp.width - 4) x = best.x + (pr.left - pp.left) - tw - 14; if (x < 4) x = 4; if (y + th > pp.height - 4) y = pp.height - th - 4;
+      tip.style.left = x + 'px'; tip.style.top = y + 'px';
+    }
+    cv.addEventListener('pointermove', e => { const b = cv.getBoundingClientRect(); stato.x = e.clientX - b.left; stato.y = e.clientY - b.top; if (ferma()) disegna(); else mostraTip(); });
+    cv.addEventListener('pointerleave', () => { stato.x = stato.y = -1; tip.style.display = 'none'; });
+    cv.addEventListener('pointerdown', e => { const b = cv.getBoundingClientRect(); stato.x = e.clientX - b.left; stato.y = e.clientY - b.top; mostraTip(); });
+    const ferma = () => root.classList.contains('noanim') || (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
+    function giro(t) {
+      requestAnimationFrame(giro);
+      if (document.hidden || !cv.offsetParent) { t0 = t; return; }
+      const dt = Math.min(.1, (t - t0) / 1000); t0 = t;
+      if (ferma()) return;
+      tt += dt; disegna();
+    }
+    ridisegna.push(() => { if (cv.offsetParent) disegna(); });
+    window.addEventListener('resize', () => { if (cv.offsetParent) disegna(); });
+    requestAnimationFrame(() => { disegna(); requestAnimationFrame(giro); });
+  }
+
+  function flusso(cv, f, pan) {
+    const ctx = cv.getContext('2d');
+    const css = n => getComputedStyle(root).getPropertyValue(n).trim();
+    const rgba = (hex, a) => { hex = (hex || '#a78bfa').replace('#', ''); if (hex.length === 3) hex = hex.replace(/./g, '$&$&'); const n = parseInt(hex, 16); return `rgba(${n >> 16 & 255},${n >> 8 & 255},${n & 255},${a})`; };
+    const tip = el('div', 'rtip'); tip.style.display = 'none'; pan.append(tip);
+    const esc = s => String(s == null ? '' : s).replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+    const tr = (s, n) => s.length > n ? s.slice(0, Math.max(1, n - 1)) + '…' : s;
+    const cl = (v, a, b) => Math.max(a, Math.min(b, v));
+    const num1 = v => v.toFixed(1).replace('.', ',');
+    const fmtMB = mb => mb == null ? 'n.d.' : mb >= 1048576 ? num1(mb / 1048576) + ' TB' : mb >= 1024 ? num1(mb / 1024) + ' GB' : Math.round(mb) + ' MB';
+    const fmtTok = t => t >= 1e6 ? num1(t / 1e6) + ' M' : t >= 1e3 ? Math.round(t / 1e3) + ' k' : String(Math.round(t));
+    const fa = t => { const s = Date.now() / 1000 - t; return s < 5400 ? Math.round(s / 60) + ' min fa' : s < 172800 ? Math.round(s / 3600) + ' h fa' : Math.round(s / 86400) + ' giorni fa'; };
+    const bez = (x1, y1, x2, y2, u) => { const mx = (x1 + x2) / 2, v = 1 - u; return [v * v * v * x1 + 3 * v * v * u * mx + 3 * v * u * u * mx + u * u * u * x2, v * v * v * y1 + 3 * v * v * u * y1 + 3 * v * u * u * y2 + u * u * u * y2]; };
+    let W = 0, H = 0, t0 = performance.now(), tt = 0, hits = [];
+    const stato = { x: -1, y: -1 };
+    function misura() {
+      const dpr = Math.min(2, window.devicePixelRatio || 1);
+      W = cv.clientWidth; H = cv.clientHeight; if (!W || !H) return false;
+      if (cv.width !== Math.round(W * dpr) || cv.height !== Math.round(H * dpr)) { cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); }
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0); return true;
+    }
+    function dotSess(s, x, y, acc, warn, bad, mut, rgb) {
+      const c2 = s.attiva ? acc : s.attesa ? warn : mut;
+      ctx.fillStyle = s.attiva ? '#ffffff' : rgba(c2, s.attesa ? .95 : .55); ctx.shadowColor = c2; ctx.shadowBlur = s.attiva ? 9 : 0;
+      ctx.beginPath(); ctx.arc(x, y, s.attiva ? 2.5 : 1.8, 0, 7); ctx.fill(); ctx.shadowBlur = 0;
+      if (s.rc === false) { ctx.strokeStyle = rgba(bad, .9); ctx.lineWidth = 1; ctx.beginPath(); ctx.arc(x, y, 4.3, 0, 7); ctx.stroke(); }
+      hits.push({ x, y, r: 6, pri: 1, info: HUD.web ? ['<b>' + esc(s.titolo) + '</b>'] : ['<b>' + esc(s.titolo) + '</b>', s.attiva ? 'al lavoro ora' : s.attesa ? 'aspetta una tua risposta' : 'ferma', s.rc === true ? 'Remote Control attivo' : s.rc === false ? '<span class="rbad">Remote Control SPENTO</span>' : 'Remote Control non noto'] });
+    }
+    function disegna() {
+      if (!misura()) return;
+      const acc = css('--s1') || '#a78bfa', ink = css('--ink') || '#ece9fb', mut = css('--muted') || '#8b86a8', ok = css('--ok') || '#4ade80',
+        warn = css('--warn') || '#fbbf24', bad = css('--bad') || '#f87171', mono = css('--mono') || 'monospace';
+      ctx.clearRect(0, 0, W, H); hits = [];
+      const Q = f.processamenti, Pp = f.paper, rows = Math.max(Q.length, Pp.length, 1), top = 30, bot = 44, avail = H - top - bot;
+      const sx = W < 1000 ? W * .3 : W * .2, px = W < 1000 ? W * .64 : W * .72;
+      const rowQ = avail / Math.max(1, Q.length), rowP = avail / Math.max(1, Pp.length);
+      const mbs = Q.map(q => q.mb).filter(v => v > 0), lmin = Math.log10(Math.min(...mbs, 1e12)), lmax = Math.log10(Math.max(...mbs, 1));
+      const rmaxS = Math.min(40, rowQ / 2 - 24), rminS = Math.min(14, rmaxS);
+      const tmax = Math.max(1, ...Pp.map(p => p.token || 0)), rmaxP = Math.min(34, rowP / 2 - 18);
+      const pos = {};
+      const Qn = Q.map((q, i) => { const lm = q.mb > 0 ? Math.log10(q.mb) : lmin, k = lmax > lmin ? (lm - lmin) / (lmax - lmin) : 1;
+        const r = rminS + (rmaxS - rminS) * k, y = top + (i + .5) * rowQ; return Object.assign({}, q, { x: sx, y, r }); });
+      const Pn = Pp.map((p, i) => { const r = 13 + (rmaxP - 13) * Math.sqrt((p.token || 0) / tmax), y = top + (i + .5) * rowP; pos[p.id] = { x: px, y, r }; return Object.assign({}, p, { x: px, y, r }); });
+      ctx.lineCap = 'round';
+      Qn.forEach((q, qi) => (q.genera || []).forEach((id, k) => { const p = pos[id]; if (!p) return;
+        const x1 = q.x + q.r + 30, y1 = q.y, x2 = p.x - p.r - 14, y2 = p.y, vivo = q.attivo, sim = !vivo && HUD.sim, sdq = qi * 2.3 + k, vel = vivo ? .07 : sim ? .045 + .035 * Math.abs(Math.sin(tt * .12 + sdq)) : .02;
+        ctx.strokeStyle = rgba(acc, vivo ? .55 : sim ? .42 : .32); ctx.lineWidth = vivo ? 1.6 : sim ? 1.3 : 1.1; ctx.beginPath(); ctx.moveTo(x1, y1); ctx.bezierCurveTo((x1 + x2) / 2, y1, (x1 + x2) / 2, y2, x2, y2); ctx.stroke();
+        for (let j = 0; j < 3; j++) { const u = (tt * vel + j / 3 + qi * .17) % 1, [bx, by] = bez(x1, y1, x2, y2, u);
+          ctx.fillStyle = rgba(vivo ? '#ffffff' : acc, vivo ? .95 : sim ? .75 : .7); ctx.shadowColor = acc; ctx.shadowBlur = vivo ? 9 : sim ? 4 : 0; ctx.beginPath(); ctx.arc(bx, by, vivo ? 2.3 : sim ? 2 : 1.7, 0, 7); ctx.fill(); ctx.shadowBlur = 0; }
+        const [mx, my] = bez(x1, y1, x2, y2, .5); const tp = p.titolo || ((f.paper.find(z => z.id === id)) || {}).titolo || id; hits.push({ x: mx, y: my, r: 9, info: HUD.web ? ['<b>' + esc(q.titolo) + '</b> genera <b>' + esc(tp) + '</b>'] : ['<b>' + esc(q.titolo) + '</b> genera <b>' + esc(tp) + '</b>', q.attivo ? 'processo attivo adesso' : 'processo fermo in questo momento'] }); }));
+      Qn.forEach((q, qi) => {
+        const { x, y, r } = q, simq = !q.attivo && HUD.sim, resp = 1 + .035 * Math.sin(tt * (q.attivo ? 1.2 : simq ? .8 : .4) + qi);
+        const gr = ctx.createRadialGradient(x, y, r * .2, x, y, r * resp * 2); gr.addColorStop(0, rgba(acc, .34)); gr.addColorStop(1, rgba(acc, 0));
+        ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(x, y, r * resp * 2, 0, 7); ctx.fill();
+        ctx.fillStyle = rgba(acc, .85); ctx.shadowColor = acc; ctx.shadowBlur = q.attivo ? 20 : simq ? 14 : 10; ctx.beginPath(); ctx.arc(x, y, r * resp, 0, 7); ctx.fill(); ctx.shadowBlur = 0;
+        const py = q.py || [], ss = q.sessioniO || [], R2 = r + 14;
+        const sc = ((q.rete && q.rete.nodi) || []).filter(n => !n.vecchio).sort((a2, b2) => b2.mtime - a2.mtime).slice(0, 36), colS = { py: css('--m1') || '#60a5fa', R: '#f472b6', sbatch: css('--m3') || '#2dd4bf' };
+        sc.forEach((n, k) => { const anello = k < 18 ? 0 : 1, nn = anello ? sc.length - 18 : Math.min(18, sc.length), kk = anello ? k - 18 : k, rr = r + 29 + anello * 11,
+            a = kk * 2 * Math.PI / nn + tt * (.035 + .008 * anello) * (anello ? -1 : 1), sx2 = x + Math.cos(a) * rr, sy2 = y + Math.sin(a) * rr, col = colS[n.lang] || colS.py, reale = !!n.attivo, lit = !reale && HUD.sim && Math.sin(tt * .1 + k * 1.9) > .72;
+          ctx.fillStyle = reale ? '#ffffff' : lit ? col : rgba(col, .6); ctx.shadowColor = reale ? '#ffffff' : col; ctx.shadowBlur = reale ? 10 : lit ? 7 : 0; ctx.beginPath(); ctx.arc(sx2, sy2, reale ? 3.2 : lit ? 2.6 : 2, 0, 7); ctx.fill(); ctx.shadowBlur = 0;
+          hits.push({ x: sx2, y: sy2, r: 5, pri: 1, info: ['<b>' + esc(n.nome || n.id) + ({ py: '.py', R: '.R', sbatch: '.sbatch' }[n.lang] || '') + '</b> <span class="rm">script ' + esc(n.lang || 'py') + ' di ' + esc(q.titolo) + '</span>', n.loc + ' righe · modificato ' + fa(n.mtime), reale ? 'in esecuzione adesso' : lit ? 'simulazione: in esecuzione (valore casuale)' : ''].filter(Boolean) }); });
+        ss.forEach((s, k) => { const a = k * 2 * Math.PI / ss.length + tt * (s.attiva ? .2 : .07) * (k % 2 ? -1 : 1); dotSess(s, x + Math.cos(a) * R2, y + Math.sin(a) * R2, acc, warn, bad, mut); });
+        (q.esterni || []).forEach((e, k) => { const a = -2.1 + k * .7, ex = x + Math.cos(a) * (r + 62), ey = y + Math.sin(a) * (r + 62);
+          ctx.setLineDash([3, 3]); ctx.strokeStyle = rgba(ok, .5); ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(x + Math.cos(a) * (R2 + 5), y + Math.sin(a) * (R2 + 5)); ctx.lineTo(ex, ey); ctx.stroke(); ctx.setLineDash([]);
+          const u = (tt * .09 + k * .4) % 1; ctx.fillStyle = rgba(ok, .95); ctx.beginPath(); ctx.arc(ex + (x + Math.cos(a) * (R2 + 5) - ex) * u, ey + (y + Math.sin(a) * (R2 + 5) - ey) * u, 1.8, 0, 7); ctx.fill();
+          ctx.fillStyle = rgba(ok, .2); ctx.strokeStyle = ok; ctx.lineWidth = 1.3; ctx.beginPath(); ctx.roundRect ? ctx.roundRect(ex - 9, ey - 6, 18, 12, 4) : ctx.rect(ex - 9, ey - 6, 18, 12); ctx.fill(); ctx.stroke();
+          ctx.fillStyle = ink; ctx.font = '9px ' + mono; ctx.textAlign = 'center'; ctx.textBaseline = 'top'; ctx.fillText(e.nome, ex, ey + 9);
+          hits.push({ x: ex, y: ey, r: 12, info: ['<b>' + esc(e.nome) + '</b> <span class="rm">sistema esterno</span>', esc(e.nota || '')] }); });
+        const lx = x - r - 42; ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+        ctx.fillStyle = ink; ctx.font = '600 11.5px ' + mono; ctx.fillText(tr(q.titolo, Math.max(8, Math.floor((lx - 10) / 7))), lx, y - 10);
+        ctx.fillStyle = acc; ctx.font = '11px ' + mono; ctx.fillText(fmtMB(q.mb) + (q.parziale ? '+' : ''), lx, y + 6);
+        ctx.fillStyle = mut; ctx.font = '9.5px ' + mono; ctx.fillText((q.file != null ? q.file.toLocaleString('it-IT') + ' file · ' : '') + (q.rete && q.rete.nodi.length ? q.rete.nodi.filter(n => !n.vecchio).length : (q.py_tot || 0)) + ' script', lx, y + 21);
+        hits.push({ x, y, r: r + 4, info: ['<b>' + esc(q.titolo) + '</b>', esc(q.nota || ''), 'prodotti: ' + fmtMB(q.mb) + (q.file != null ? ' in ' + q.file.toLocaleString('it-IT') + ' file' : '') + (q.parziale ? ' (misura parziale)' : ''),
+          'script analizzati: ' + (q.rete && q.rete.nodi.length ? q.rete.nodi.filter(n => !n.vecchio).length + ' (vedi la rete qui sotto)' : '0') + (q.in_corso ? ' · ' + q.in_corso + ' processi in esecuzione' : ''), 'sessioni: ' + ss.length, q.misura_t ? 'misurato ' + fa(q.misura_t) : ''].filter(Boolean) });
+      });
+      Pn.forEach((p, pi) => {
+        const { x, y, r } = p, rr = r + 7, pct = p.pct == null ? null : cl(p.pct, 0, 1);
+        const gr = ctx.createRadialGradient(x, y, r * .2, x, y, rr * 1.8); gr.addColorStop(0, rgba(ok, .22)); gr.addColorStop(1, rgba(ok, 0)); ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(x, y, rr * 1.8, 0, 7); ctx.fill();
+        ctx.fillStyle = rgba(ok, .16); ctx.strokeStyle = rgba(ok, .75); ctx.lineWidth = 1.3; ctx.beginPath(); if (p.tipo === 'report' && ctx.roundRect) ctx.roundRect(x - r * .86, y - r * .86, r * 1.72, r * 1.72, r * .28); else ctx.arc(x, y, r, 0, 7); ctx.fill(); ctx.stroke();
+        ctx.lineWidth = 4.5; ctx.strokeStyle = rgba(ink, .14); ctx.beginPath(); ctx.arc(x, y, rr, 0, 7); ctx.stroke();
+        if (pct != null) { ctx.strokeStyle = ok; ctx.shadowColor = ok; ctx.shadowBlur = p.attivo ? 14 : 6; ctx.beginPath(); ctx.arc(x, y, rr, -Math.PI / 2, -Math.PI / 2 + Math.max(.05, pct * 2 * Math.PI)); ctx.stroke(); ctx.shadowBlur = 0; }
+        ctx.fillStyle = ink; ctx.font = '600 ' + (r > 20 ? 12 : 10) + 'px ' + mono; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(pct == null ? '?' : Math.round(pct * 100) + '%', x, y);
+        const ss = p.sessioniO || [], R2 = rr + 14;
+        ss.forEach((s, k) => { const a = k * 2 * Math.PI / ss.length + tt * (s.attiva ? .2 : .07) * (k % 2 ? 1 : -1); dotSess(s, x + Math.cos(a) * R2, y + Math.sin(a) * R2, acc, warn, bad, mut); });
+        const lx = x + rr + 32; ctx.textAlign = 'left';
+        ctx.fillStyle = ink; ctx.font = '600 11.5px ' + mono; ctx.fillText(tr(p.titolo, Math.max(10, Math.floor((W - lx - 10) / 7))), lx, y - 10); if (p.tipo === 'report') { ctx.fillStyle = mut; ctx.font = '9px ' + mono; ctx.textAlign = 'right'; ctx.fillText('REPORT', W - 12, y - 10); ctx.textAlign = 'left'; }
+        ctx.fillStyle = ok; ctx.font = '11px ' + mono; ctx.fillText((pct == null ? 'n.d.' : Math.round(pct * 100) + '%') + ' · ' + fmtTok(p.token || 0) + ' token', lx, y + 6);
+        ctx.fillStyle = mut; ctx.font = '9.5px ' + mono; ctx.fillText(ss.length + (ss.length === 1 ? ' sessione' : ' sessioni') + (p.scadenza ? ' · scadenza ' + p.scadenza.split('-').reverse().join('/') : ''), lx, y + 21);
+        hits.push({ x, y, r: rr + 4, info: ['<b>' + esc(p.titolo) + '</b>', pct == null ? 'completamento non noto' : 'completamento ' + Math.round(pct * 100) + '%' + (p.nota_completamento ? ' (' + esc(p.nota_completamento) + ')' : ''), 'token spesi: ' + fmtTok(p.token || 0) + ' (input, output e scritture in cache; esclusa la lettura della cache: ' + fmtTok(p.token_cache || 0) + ')',
+          'sessioni: ' + ss.length, p.scadenza ? 'scadenza ' + p.scadenza.split('-').reverse().join('/') : ''].filter(Boolean) });
+      });
+      ctx.textBaseline = 'middle'; ctx.font = '9.5px ' + mono; ctx.fillStyle = mut; ctx.textAlign = 'center';
+      ctx.fillText('PROCESSI', sx, 14); ctx.fillText('PAPER', px, 14);
+      ctx.textAlign = 'left'; ctx.font = '9px ' + mono;
+      const testo = 'sole = MB prodotti (scala logaritmica) · paper = token spesi · anello = % completamento · puntini = sessioni (bianco al lavoro, giallo aspetta te) · satelliti = script: blu .py, rosa .R, verde acqua sbatch';
+      const due = ctx.measureText(testo).width > W - 28, m1 = testo.indexOf(' · puntini =');
+      if (due) { ctx.fillText(testo.slice(0, m1), 14, H - 22); ctx.fillText(testo.slice(m1 + 3), 14, H - 9); } else ctx.fillText(testo, 14, H - 12);
+      if (stato.x >= 0) mostraTip();
+    }
+    function mostraTip() {
+      let best = null, bd = 1e9;
+      hits.forEach(h => { const d = Math.hypot(h.x - stato.x, h.y - stato.y) - (h.pri ? 4 : 0); if (d < h.r && d < bd) { bd = d; best = h; } });
+      if (!best) { tip.style.display = 'none'; return; }
+      tip.innerHTML = best.info.map(l => '<div>' + l + '</div>').join('');
+      tip.style.display = 'block';
+      const pr = cv.getBoundingClientRect(), pp = pan.getBoundingClientRect(), tw = tip.offsetWidth, th = tip.offsetHeight;
+      let x = best.x + (pr.left - pp.left) + 14, y = best.y + (pr.top - pp.top) + 12;
+      if (x + tw > pp.width - 4) x = best.x + (pr.left - pp.left) - tw - 14; if (x < 4) x = 4; if (y + th > pp.height - 4) y = pp.height - th - 4;
+      tip.style.left = x + 'px'; tip.style.top = y + 'px';
+    }
+    cv.addEventListener('pointermove', e => { const b = cv.getBoundingClientRect(); stato.x = e.clientX - b.left; stato.y = e.clientY - b.top; if (ferma()) disegna(); else mostraTip(); });
+    cv.addEventListener('pointerleave', () => { stato.x = stato.y = -1; tip.style.display = 'none'; });
+    cv.addEventListener('pointerdown', e => { const b = cv.getBoundingClientRect(); stato.x = e.clientX - b.left; stato.y = e.clientY - b.top; mostraTip(); });
+    const ferma = () => root.classList.contains('noanim') || (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
+    function giro(t) {
+      requestAnimationFrame(giro);
+      if (document.hidden || !cv.offsetParent) { t0 = t; return; }
+      const dt = Math.min(.1, (t - t0) / 1000); t0 = t;
+      if (ferma()) return;
+      tt += dt; disegna();
+    }
+    ridisegna.push(() => { if (cv.offsetParent) disegna(); });
+    window.addEventListener('resize', () => { if (cv.offsetParent) disegna(); });
+    requestAnimationFrame(() => { disegna(); requestAnimationFrame(giro); });
+  }
+
+  function pipeline(cv, o, pan, tabs, tog) {
+    const ctx = cv.getContext('2d');
+    const css = n => getComputedStyle(root).getPropertyValue(n).trim();
+    const rgba = (hex, a) => { hex = (hex || '#a78bfa').replace('#', ''); if (hex.length === 3) hex = hex.replace(/./g, '$&$&'); const n = parseInt(hex, 16); return `rgba(${n >> 16 & 255},${n >> 8 & 255},${n & 255},${a})`; };
+    const tip = el('div', 'rtip'); tip.style.display = 'none'; pan.append(tip);
+    const esc = s => String(s == null ? '' : s).replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
+    const tr = (s, n) => s.length > n ? s.slice(0, Math.max(1, n - 1)) + '…' : s;
+    const fa = t => { const s = Date.now() / 1000 - t; return s < 5400 ? Math.round(s / 60) + ' min fa' : s < 172800 ? Math.round(s / 3600) + ' h fa' : Math.round(s / 86400) + ' giorni fa'; };
+    let sel = 0, vecchi = false, G = null, W = 0, H = 0, t0 = performance.now(), tt = 0, hits = [], hover = null;
+    const stato = { x: -1, y: -1 };
+    function misura() {
+      const dpr = Math.min(2, window.devicePixelRatio || 1);
+      W = cv.clientWidth; H = cv.clientHeight; if (!W || !H) return false;
+      if (cv.width !== Math.round(W * dpr) || cv.height !== Math.round(H * dpr)) { cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); G = null; }
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0); return true;
+    }
+    function costruisci() {
+      const q = o.processamenti[sel], r = q.rete || { nodi: [], archi: [] };
+      const nodi = r.nodi.filter(n => vecchi || !n.vecchio).map(n => Object.assign({}, n, { usa: [], usato: [] })), by = Object.fromEntries(nodi.map(n => [n.id, n]));
+      const archi = r.archi.filter(a => by[a[0]] && by[a[1]]).map(a => ({ a: by[a[0]], b: by[a[1]], t: a[2] }));
+      archi.forEach(e => { e.a.usa.push(e.b); e.b.usato.push(e.a); });
+      const n = Math.max(1, nodi.length);
+      nodi.forEach(x => { x.hub = x.serie !== 'fase' && x.usato.length >= 6 && x.usato.length >= .15 * n; x.regia = !x.usato.length && x.usa.length >= 2; });
+      const lib = nodi.filter(x => x.hub), mov = nodi.filter(x => !x.hub);
+      const cart = [...new Set(mov.map(x => x.cartella))].sort(), padX = 70, top = 44, bot = 70;
+      const rng = {}; mov.forEach(x => { if (x.stadio != null) { const r_ = rng[x.serie] = rng[x.serie] || [x.stadio, x.stadio]; r_[0] = Math.min(r_[0], x.stadio); r_[1] = Math.max(r_[1], x.stadio); } });
+      const xs = x => { const r_ = rng[x.serie]; return padX + (x.stadio - r_[0]) / ((r_[1] - r_[0]) || 1) * (W - 2 * padX); }, area = Math.max(80, H - top - bot);
+      let seed = 7; const rnd = () => { seed = (seed * 16807) % 2147483647; return seed / 2147483647; };
+      mov.forEach(x => { const k = cart.indexOf(x.cartella), by_ = top + (k + .5) / Math.max(1, cart.length) * area; x.by = by_;
+        x.x = x.stadio != null ? xs(x) : x.regia ? 40 : padX + rnd() * (W - 2 * padX); x.y = by_ + (rnd() - .5) * 40; x.vx = x.vy = 0; });
+      for (let it = 0; it < 320; it++) {
+        const al = 1 - it / 320;
+        for (let i = 0; i < mov.length; i++) for (let j = i + 1; j < mov.length; j++) { const a = mov[i], b = mov[j]; let dx = a.x - b.x, dy = a.y - b.y, d2 = dx * dx + dy * dy + .01; if (d2 > 12100) continue; const d = Math.sqrt(d2), f = (110 - d) * .06; dx /= d; dy /= d; a.vx += dx * f; a.vy += dy * f; b.vx -= dx * f; b.vy -= dy * f; }
+        archi.forEach(e => { if (e.a.hub || e.b.hub) return; const dx = e.b.x - e.a.x, dy = e.b.y - e.a.y, d = Math.sqrt(dx * dx + dy * dy) + .01, f = (d - 70) * .008; e.a.vx += dx / d * f; e.a.vy += dy / d * f; e.b.vx -= dx / d * f; e.b.vy -= dy / d * f; });
+        mov.forEach(x => { if (x.stadio != null) x.vx += (xs(x) - x.x) * .35; else if (x.regia) x.vx += (40 - x.x) * .05; x.vy += (x.by - x.y) * .014; x.vx *= .8; x.vy *= .8; x.x = Math.max(24, Math.min(W - 24, x.x + x.vx * al)); x.y = Math.max(top, Math.min(H - bot, x.y + x.vy * al)); });
+      }
+      lib.sort((a, b) => b.usato.length - a.usato.length).forEach((x, i) => { x.x = 60 + (i + .5) * (W - 120) / Math.max(1, lib.length); x.y = H - 38; x.by = x.y; });
+      G = { nodi, archi, cart, rng, padX };
+    }
+    function disegna() {
+      if (!misura()) return;
+      if (!G) costruisci();
+      const acc = css('--s1') || '#a78bfa', ink = css('--ink') || '#ece9fb', mut = css('--muted') || '#8b86a8', ok = css('--ok') || '#4ade80',
+        warn = css('--warn') || '#fbbf24', bad = css('--bad') || '#f87171', mono = css('--mono') || 'monospace';
+      const pal = [acc, ok, warn, css('--m1') || '#60a5fa', css('--m3') || '#2dd4bf', bad];
+      ctx.clearRect(0, 0, W, H); hits = [];
+      const { nodi, archi, cart } = G, nh = hover ? new Set([hover, ...hover.usa, ...hover.usato]) : null;
+      const fs = nodi.filter(x => x.serie === 'fase' && x.stadio != null).map(x => x.stadio), f0 = fs.length ? Math.min(...fs) : 0, f1 = fs.length ? Math.max(...fs) : 1, onda = f0 - 1 + (tt * .45) % (f1 - f0 + 3);
+      nodi.forEach(x => { const h2 = [...x.id].reduce((a2, ch) => a2 + ch.charCodeAt(0), 0); x.simv = !!(HUD.sim && !x.attivo && (x.serie === 'fase' ? Math.abs(x.stadio - onda) < .8 : Math.sin(tt * .18 + h2) > .82)); });
+      const px = x => x.x + Math.sin(tt * .6 + x.id.length * 1.7) * 1.6, py = x => x.y + Math.cos(tt * .5 + x.id.length * 2.3) * 1.6;
+      const serieH = G.rng.fase ? 'fase' : 'num', r_ = G.rng[serieH] || [0, 1], fasi = [...new Set(nodi.filter(x => x.serie === serieH && Math.floor(x.stadio) === x.stadio).map(x => x.stadio))].sort((a, b) => a - b);
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.font = '9px ' + mono; ctx.fillStyle = rgba(mut, .8);
+      const passoH = Math.ceil(fasi.length / 10);
+      fasi.forEach((s, ih) => { if (ih % passoH) return; const x = G.padX + (s - r_[0]) / ((r_[1] - r_[0]) || 1) * (W - 2 * G.padX); ctx.fillText((serieH === 'fase' ? 'fase ' : 'passo ') + s, x, 16); ctx.strokeStyle = rgba(acc, .07); ctx.lineWidth = 1; ctx.setLineDash([2, 6]); ctx.beginPath(); ctx.moveTo(x, 26); ctx.lineTo(x, H - 64); ctx.stroke(); ctx.setLineDash([]); });
+      if (fasi.length > 1) { ctx.strokeStyle = rgba(acc, .35); ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(16, 30); ctx.lineTo(W - 16, 30); ctx.stroke(); ctx.beginPath(); ctx.moveTo(W - 22, 27); ctx.lineTo(W - 16, 30); ctx.lineTo(W - 22, 33); ctx.stroke(); }
+      ctx.textAlign = 'left'; cart.forEach((c, k) => { if (cart.length < 2) return; const y = 44 + (k + .5) / cart.length * Math.max(80, H - 44 - 70); ctx.fillStyle = rgba(pal[k % pal.length], .55); ctx.font = '9px ' + mono; ctx.fillText('▸ ' + (c || 'radice'), 10, y - Math.max(80, H - 114) / cart.length / 2 + 8); });
+      ctx.lineCap = 'round';
+      archi.forEach((e, i) => {
+        const x1 = px(e.a), y1 = py(e.a), x2 = px(e.b), y2 = py(e.b), toHub = e.b.hub, evid = nh && nh.has(e.a) && nh.has(e.b) && (e.a === hover || e.b === hover), vivo = e.a.attivo || e.b.attivo, lite = !vivo && (e.a.simv || e.b.simv);
+        const col = pal[Math.max(0, cart.indexOf(e.a.cartella)) % pal.length];
+        ctx.setLineDash(e.t === 'l' ? [3, 3] : []); ctx.strokeStyle = rgba(evid ? '#ffffff' : col, evid ? .85 : toHub ? (nh ? .02 : .06) : (nh ? .08 : vivo ? .6 : lite ? .5 : .32)); ctx.lineWidth = evid ? 1.5 : vivo ? 1.4 : lite ? 1.2 : 1;
+        ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke(); ctx.setLineDash([]);
+        if (toHub && !evid) return;
+        const L = Math.hypot(x2 - x1, y2 - y1); if (L < 6) return;
+        const ux = (x2 - x1) / L, uy = (y2 - y1) / L, mx = x2 - ux * 10, my = y2 - uy * 10;
+        ctx.fillStyle = rgba(evid ? '#ffffff' : col, evid ? .9 : (nh ? .1 : .5)); ctx.beginPath(); ctx.moveTo(x2 - ux * 5, y2 - uy * 5); ctx.lineTo(mx - uy * 3, my + ux * 3); ctx.lineTo(mx + uy * 3, my - ux * 3); ctx.closePath(); ctx.fill();
+        const u = (tt * (vivo ? .5 : lite ? .32 : .14) + (i * .137) % 1) % 1; ctx.fillStyle = rgba(vivo ? '#ffffff' : col, nh && !evid ? .15 : lite ? .75 : .9); ctx.shadowColor = col; ctx.shadowBlur = vivo || evid ? 8 : lite ? 4 : 0; ctx.beginPath(); ctx.arc(x1 + (x2 - x1) * u, y1 + (y2 - y1) * u, vivo || evid ? 2.2 : lite ? 1.9 : 1.6, 0, 7); ctx.fill(); ctx.shadowBlur = 0;
+      });
+      const occ = []; ctx.textBaseline = 'middle';
+      const ordine = nodi.slice().sort((a, b) => (b.regia - a.regia) || (b.attivo - a.attivo) || ((b.usato.length + b.usa.length) - (a.usato.length + a.usa.length)));
+      ordine.forEach(x => {
+        const X = px(x), Y = py(x), k = Math.max(0, cart.indexOf(x.cartella)), col = pal[k % pal.length], dim = nh && !nh.has(x);
+        const r = (x.hub ? 6 : 3) + 2.4 * Math.sqrt(Math.min(x.loc, 900) / 100) * (x.hub ? .8 : 1), vivo = !!x.attivo;
+        ctx.globalAlpha = dim ? .22 : 1;
+        if (x.regia) { ctx.strokeStyle = rgba(col, .8); ctx.lineWidth = 1.2; ctx.beginPath(); ctx.arc(X, Y, r + 4, 0, 7); ctx.stroke(); }
+        ctx.fillStyle = vivo ? '#ffffff' : rgba(col, x.hub ? .9 : .78); ctx.shadowColor = vivo ? '#ffffff' : col; ctx.shadowBlur = vivo ? 16 + 4 * Math.sin(tt * 5) : x.simv ? 12 : x === hover ? 12 : 4;
+        ctx.beginPath(); ctx.arc(X, Y, r * (vivo ? 1.2 : x.simv ? 1.15 : 1), 0, 7); ctx.fill(); ctx.shadowBlur = 0;
+        hits.push({ x: X, y: Y, r: Math.max(9, r + 3), n: x });
+        const mostra = x.regia || vivo || x.hub || x === hover || (nh && nh.has(x)) || (x.usa.length + x.usato.length >= 4);
+        if (mostra) { const txt = tr(x.nome || x.id, x.hub || x.regia ? 26 : 20); ctx.font = (x.regia || vivo ? '600 ' : '') + '9.5px ' + mono; const w = ctx.measureText(txt).width, lx = X - w / 2, ly = Y + r + 9;
+          const Xl = Math.max(w / 2 + 4, Math.min(W - w / 2 - 4, X)), lx2 = Xl - w / 2;
+          if (x === hover || vivo || x.regia || !occ.some(o2 => lx2 < o2[0] + o2[2] + 3 && lx2 + w + 3 > o2[0] && Math.abs(ly - o2[1]) < 11)) { occ.push([lx2, ly, w]); ctx.fillStyle = dim ? rgba(ink, .5) : ink; ctx.textAlign = 'center'; ctx.fillText(txt, Xl, ly); } }
+        ctx.globalAlpha = 1;
+      });
+      ctx.textAlign = 'left'; ctx.font = '9px ' + mono; ctx.fillStyle = mut;
+      const hub = nodi.some(x => x.hub);
+      ctx.fillText('freccia = «usa» · tratteggio = «cita o lancia» · nodo grande = più righe · anello = script di regia · luminoso = in esecuzione adesso' + (hub ? ' · in basso: librerie usate da molti script' : ''), 14, H - 10);
+      ctx.fillText(nodi.length + ' script · ' + archi.length + ' relazioni' + (nodi.some(x => x.lang === 'R') ? ' · R e sbatch compresi' : ''), 14, H - 62 + 4);
+      if (!nodi.length) { ctx.textAlign = 'center'; ctx.fillStyle = mut; ctx.fillText('nessuno script analizzato', W / 2, H / 2); }
+      if (stato.x >= 0) mostraTip();
+    }
+    function mostraTip() {
+      let best = null, bd = 1e9; hits.forEach(h => { const d = Math.hypot(h.x - stato.x, h.y - stato.y); if (d < h.r && d < bd) { bd = d; best = h; } });
+      const nuovo = best ? best.n : null; if (nuovo !== hover) { hover = nuovo; if (ferma()) disegna(); }
+      if (!best) { tip.style.display = 'none'; return; }
+      const n = best.n, nom = l => l.slice(0, 8).map(y => esc(y.nome || y.id)).join(', ') + (l.length > 8 ? '… (' + l.length + ')' : '');
+      tip.innerHTML = ['<b>' + esc(n.nome || n.id) + ({ py: '.py', R: '.R', sbatch: '.sbatch' }[n.lang] || '') + '</b> <span class="rm">' + esc(n.cartella || 'radice') + (n.vecchio ? ' · versione vecchia' : '') + '</span>', n.loc + ' righe · modificato ' + fa(n.mtime),
+        n.attivo ? '<b>in esecuzione adesso</b>' : '', n.usa.length ? 'usa: ' + nom(n.usa) : 'non usa altri script', n.usato.length ? 'usato da: ' + nom(n.usato) : 'non è usato da altri script (punto d’ingresso)'].filter(Boolean).map(l => '<div>' + l + '</div>').join('');
+      tip.style.display = 'block';
+      const pr = cv.getBoundingClientRect(), pp = pan.getBoundingClientRect(), tw = tip.offsetWidth, th = tip.offsetHeight;
+      let x = best.x + (pr.left - pp.left) + 14, y = best.y + (pr.top - pp.top) + 12;
+      if (x + tw > pp.width - 4) x = best.x + (pr.left - pp.left) - tw - 14; if (x < 4) x = 4; if (y + th > pp.height - 4) y = pp.height - th - 4;
+      tip.style.left = x + 'px'; tip.style.top = y + 'px';
+    }
+    const bt = [];
+    o.processamenti.forEach((q, i) => { const b = el('button', 'tab' + (i === 0 ? ' on' : ''), q.titolo); b.type = 'button'; b.addEventListener('click', () => { sel = i; G = null; bt.forEach((x, j) => x.classList.toggle('on', j === i)); disegna(); }); bt.push(b); tabs.append(b); });
+    if (HUD.web) tog.style.display = 'none';
+    tog.type = 'button'; const agg = () => { tog.textContent = 'Versioni vecchie: ' + (vecchi ? 'sì' : 'no'); tog.classList.toggle('on', vecchi); }; agg();
+    tog.addEventListener('click', () => { vecchi = !vecchi; G = null; agg(); disegna(); });
+    o.seleziona = id => { const i = o.processamenti.findIndex(q => q.id === id); if (i >= 0) { sel = i; G = null; bt.forEach((x, j) => x.classList.toggle('on', j === i)); disegna(); } };
+    cv.addEventListener('pointermove', e => { const b = cv.getBoundingClientRect(); stato.x = e.clientX - b.left; stato.y = e.clientY - b.top; mostraTip(); if (ferma()) disegna(); });
+    cv.addEventListener('pointerleave', () => { stato.x = stato.y = -1; hover = null; tip.style.display = 'none'; if (ferma()) disegna(); });
+    cv.addEventListener('pointerdown', e => { const b = cv.getBoundingClientRect(); stato.x = e.clientX - b.left; stato.y = e.clientY - b.top; mostraTip(); });
+    const ferma = () => root.classList.contains('noanim') || (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
+    function giro(t) {
+      requestAnimationFrame(giro);
+      if (document.hidden || !cv.offsetParent) { t0 = t; return; }
+      const dt = Math.min(.1, (t - t0) / 1000); t0 = t;
+      if (ferma()) return;
+      tt += dt; disegna();
+    }
+    ridisegna.push(() => { if (cv.offsetParent) { G = null; disegna(); } });
+    window.addEventListener('resize', () => { if (cv.offsetParent) { G = null; disegna(); } });
+    requestAnimationFrame(() => { disegna(); requestAnimationFrame(giro); });
+    return o;
+  }
+
+  function poliedro(cv, attivi, tags) {
+    const ctx = cv.getContext('2d');
+    const css = n => getComputedStyle(root).getPropertyValue(n).trim();
+    const colore = c => { const m = /^var\((--[\w-]+)\)$/.exec(c || ''); return m ? css(m[1]) : (c || css('--s1')); };
+    const rgba = (hex, a) => { hex = hex.replace('#', ''); if (hex.length === 3) hex = hex.replace(/./g, '$&$&'); const n = parseInt(hex, 16); return `rgba(${n >> 16 & 255},${n >> 8 & 255},${n & 255},${a})`; };
+    const V = [[0, -1.35, 0]];
+    for (let i = 0; i < 6; i++) { const a = i * Math.PI / 3; V.push([Math.cos(a) * .78, -.42, Math.sin(a) * .78]); }
+    for (let i = 0; i < 6; i++) { const a = i * Math.PI / 3 + Math.PI / 6; V.push([Math.cos(a) * .92, .3, Math.sin(a) * .92]); }
+    V.push([0, 1.5, 0]);
+    const E = [];
+    for (let i = 0; i < 6; i++) { E.push([0, 1 + i], [1 + i, 1 + (i + 1) % 6], [1 + i, 7 + i], [1 + i, 7 + (i + 5) % 6], [7 + i, 7 + (i + 1) % 6], [7 + i, 13]); }
+    const orb = []; for (let k = 0; k < 2; k++) for (let i = 0; i < 46; i++) orb.push({ k, a: i / 46 * Math.PI * 2, r: 1.0 + (i * 37 % 11) / 22 });
+    let W = 0, H = 0, ang = .55, t0 = performance.now(), raf = 0;
+    function misura() {
+      const dpr = Math.min(2, window.devicePixelRatio || 1);
+      W = cv.clientWidth; H = cv.clientHeight; if (!W || !H) return false;
+      if (cv.width !== Math.round(W * dpr) || cv.height !== Math.round(H * dpr)) { cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); }
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0); return true;
+    }
+    function ruota(v, a, tilt) {
+      let [x, y, z] = v; const c = Math.cos(a), s = Math.sin(a);
+      [x, z] = [x * c + z * s, -x * s + z * c];
+      const ct = Math.cos(tilt), st = Math.sin(tilt); [y, z] = [y * ct - z * st, y * st + z * ct];
+      return [x, y, z];
+    }
+    function disegna() {
+      if (!misura()) return;
+      const acc = css('--s1') || '#a78bfa', bg = css('--surface') || '#110e20';
+      ctx.clearRect(0, 0, W, H);
+      const cx = W / 2, cy = H * .47, R = Math.min(W * .30, H * .27), F = 3.4, tilt = .22;
+      const P = (v) => { const s = F / (F + v[2]); return [cx + v[0] * R * s, cy + v[1] * R * s, v[2], s]; };
+      const by = cy + R * 1.78;
+      const g = ctx.createLinearGradient(0, cy - R, 0, by);
+      g.addColorStop(0, rgba(acc, 0)); g.addColorStop(1, rgba(acc, .22));
+      ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(cx - R * .28, cy + R * .6); ctx.lineTo(cx + R * .28, cy + R * .6); ctx.lineTo(cx + R * 1.05, by); ctx.lineTo(cx - R * 1.05, by); ctx.closePath(); ctx.fill();
+      ctx.strokeStyle = rgba(acc, .55); ctx.lineWidth = 1;
+      for (const [k, a] of [[1, .55], [1.5, .25]]) { ctx.strokeStyle = rgba(acc, a); ctx.beginPath(); ctx.ellipse(cx, by, R * 1.05 * k, R * .26 * k, 0, 0, 7); ctx.stroke(); }
+      orb.forEach(o => {
+        const a = o.a + ang * (o.k ? -.55 : .4);
+        const x = Math.cos(a) * R * (1.7 + o.r * .55), z0 = Math.sin(a), y = z0 * R * (o.k ? .42 : .62) + (o.k ? -R * .25 : R * .1);
+        const dx = x * Math.cos(o.k ? .35 : -.2) - y * Math.sin(o.k ? .35 : -.2) * .3;
+        const prof = (z0 + 1) / 2;
+        ctx.fillStyle = rgba(acc, .12 + .6 * prof); ctx.beginPath(); ctx.arc(cx + dx, cy + y, .8 + 1.2 * prof, 0, 7); ctx.fill();
+      });
+      const pts = V.map(v => P(ruota(v, ang, tilt)));
+      ctx.lineCap = 'round'; ctx.shadowColor = acc; ctx.shadowBlur = 10;
+      E.forEach(([a, b]) => {
+        const z = (pts[a][2] + pts[b][2]) / 2, d = Math.max(0, Math.min(1, (1 - z) / 2));
+        ctx.strokeStyle = rgba('#ffffff', .22 + .7 * d); ctx.lineWidth = .7 + 1.1 * d;
+        ctx.beginPath(); ctx.moveTo(pts[a][0], pts[a][1]); ctx.lineTo(pts[b][0], pts[b][1]); ctx.stroke();
+      });
+      ctx.shadowBlur = 0;
+      pts.forEach(p => { const d = Math.max(0, Math.min(1, (1 - p[2]) / 2)); ctx.fillStyle = rgba('#ffffff', .35 + .65 * d); ctx.beginPath(); ctx.arc(p[0], p[1], 1.6 + 1.6 * d, 0, 7); ctx.fill(); });
+      const ix = [3, 9, 6, 12, 1, 8, 10, 5];
+      ctx.font = '10px ' + (css('--mono') || 'monospace'); ctx.textBaseline = 'middle';
+      const occ = [];
+      tags.slice(0, ix.length).forEach((tg, i) => {
+        const p = pts[ix[i]], txt = tg.t.length > 26 ? tg.t.slice(0, 25) + '…' : tg.t;
+        const w = ctx.measureText(txt).width + 12, x = Math.max(4, Math.min(W - w - 4, p[0] + (p[0] < cx ? -w - 10 : 10)));
+        let y = Math.max(10, Math.min(H - 30, p[1] - 14));
+        for (let n = 0; n < 12 && occ.some(r => x < r[0] + r[2] + 4 && x + w + 4 > r[0] && y < r[1] + 20 && y + 20 > r[1]); n++) y += 20;
+        y = Math.min(H - 20, y); occ.push([x, y, w]);
+        ctx.strokeStyle = rgba(colore(tg.c), .8); ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(p[0], p[1]); ctx.lineTo(x, y + 8); ctx.stroke();
+        ctx.fillStyle = colore(tg.c); ctx.fillRect(x, y, w, 16);
+        ctx.fillStyle = '#0a0814'; ctx.fillText(txt, x + 6, y + 8.5);
+      });
+      ctx.fillStyle = bg;
+    }
+    const ferma = () => root.classList.contains('noanim') || (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
+    function giro(t) {
+      raf = requestAnimationFrame(giro);
+      if (document.hidden || !cv.offsetParent) { t0 = t; return; }
+      const dt = Math.min(.1, (t - t0) / 1000); t0 = t;
+      if (ferma()) return;
+      ang += dt * (.16 + .5 * Math.min(4, attivi));
+      disegna();
+    }
+    ridisegna.push(() => { if (cv.offsetParent) disegna(); });
+    window.addEventListener('resize', () => { if (cv.offsetParent) disegna(); });
+    requestAnimationFrame(() => { disegna(); raf = requestAnimationFrame(giro); });
+  }
+})();
+</script>
+<script>
+const D = {"generato": 1795087810.2098925, "generato_iso": "2026-11-19T12:30:10+01:00", "titolo": "The geoLAB at work", "aggiorna_s": 300, "web": true, "web_nota": "Demonstration of the lab's computing work: generic names and simulated activity; data sizes, tokens and progress figures are the real aggregate values.", "web_sub": "Satellite data, machine-learning models and quantum computing at work: a demonstration, updated", "gruppi": ["PAPER", "PROCESSI", "ALTRO"], "rc_t": null, "rc_macchina": null, "agenti": {"claude": [], "windows": []}, "esecuzioni": [], "processi": {}, "macchine": [{"nome": "alpha", "mc": 0, "fresca": true, "atteso": false, "t": 1795087810.2098925, "cpu_pct": 0, "mem_pct": 0, "mem_gb": 32, "ncpu": 24, "gpu": "", "n": 0, "attive": 0, "n_proc": 0}, {"nome": "bravo", "mc": 1, "fresca": true, "atteso": false, "t": 1795087810.2098925, "cpu_pct": 0, "mem_pct": 0, "mem_gb": 32, "ncpu": 16, "gpu": "", "n": 0, "attive": 0, "n_proc": 0}, {"nome": "charlie", "mc": 2, "fresca": true, "atteso": false, "t": 1795087810.2098925, "cpu_pct": 0, "mem_pct": 0, "mem_gb": 16, "ncpu": 8, "gpu": "", "n": 0, "attive": 0, "n_proc": 0}], "progetti": [{"id": "p001", "titolo": "Data for forest policy", "pct": null, "tracciato": true, "sessioni_titoli": [], "collegamenti": [], "traguardi": [], "scadenza": null, "descrizione": "", "mancano": [], "cartelle": []}, {"id": "p002", "titolo": "Climate and biodiversity", "pct": null, "tracciato": true, "sessioni_titoli": [], "collegamenti": [], "traguardi": [], "scadenza": null, "descrizione": "", "mancano": [], "cartelle": []}, {"id": "p003", "titolo": "Study: satellite data for forests", "pct": 0.38571428571428573, "tracciato": true, "sessioni_titoli": [], "collegamenti": [], "traguardi": [], "scadenza": null, "descrizione": "", "mancano": [], "cartelle": []}, {"id": "p004", "titolo": "High-resolution mapping", "pct": null, "tracciato": true, "sessioni_titoli": [], "collegamenti": [], "traguardi": [], "scadenza": null, "descrizione": "", "mancano": [], "cartelle": []}, {"id": "p005", "titolo": "Forest carbon", "pct": null, "tracciato": true, "sessioni_titoli": [], "collegamenti": [], "traguardi": [], "scadenza": null, "descrizione": "", "mancano": [], "cartelle": []}, {"id": "p006", "titolo": "Forest monitoring", "pct": null, "tracciato": true, "sessioni_titoli": [], "collegamenti": [], "traguardi": [], "scadenza": null, "descrizione": "", "mancano": [], "cartelle": []}, {"id": "p007", "titolo": "Digital twins of the forest", "pct": 1.0, "tracciato": true, "sessioni_titoli": [], "collegamenti": [], "traguardi": [], "scadenza": null, "descrizione": "", "mancano": [], "cartelle": []}, {"id": "p008", "titolo": "LiDAR and drone surveys", "pct": null, "tracciato": true, "sessioni_titoli": [], "collegamenti": [], "traguardi": [], "scadenza": null, "descrizione": "", "mancano": [], "cartelle": []}, {"id": "p009", "titolo": "Forest variable estimation", "pct": null, "tracciato": true, "sessioni_titoli": [], "collegamenti": [], "traguardi": [], "scadenza": null, "descrizione": "", "mancano": [], "cartelle": []}, {"id": "p010", "titolo": "Satellite image processing", "pct": null, "tracciato": true, "sessioni_titoli": [], "collegamenti": [], "traguardi": [], "scadenza": null, "descrizione": "", "mancano": [], "cartelle": []}, {"id": "p011", "titolo": "Remote sensing", "pct": null, "tracciato": true, "sessioni_titoli": [], "collegamenti": [], "traguardi": [], "scadenza": null, "descrizione": "", "mancano": [], "cartelle": []}, {"id": "p012", "titolo": "Climate and biodiversity 2", "pct": null, "tracciato": true, "sessioni_titoli": [], "collegamenti": [], "traguardi": [], "scadenza": null, "descrizione": "", "mancano": [], "cartelle": []}, {"id": "p013", "titolo": "Digital twins of the forest 2", "pct": null, "tracciato": true, "sessioni_titoli": [], "collegamenti": [], "traguardi": [], "scadenza": null, "descrizione": "", "mancano": [], "cartelle": []}, {"id": "p014", "titolo": "Study: machine learning and remote sensing", "pct": 0.5357142857142857, "tracciato": true, "sessioni_titoli": [], "collegamenti": [], "traguardi": [], "scadenza": null, "descrizione": "", "mancano": [], "cartelle": []}, {"id": "p015", "titolo": "Study: quantum computing for geomatics", "pct": 0.35714285714285715, "tracciato": true, "sessioni_titoli": [], "collegamenti": [], "traguardi": [], "scadenza": null, "descrizione": "", "mancano": [], "cartelle": []}, {"id": "p016", "titolo": "High-resolution mapping 2", "pct": null, "tracciato": true, "sessioni_titoli": [], "collegamenti": [], "traguardi": [], "scadenza": null, "descrizione": "", "mancano": [], "cartelle": []}, {"id": "p017", "titolo": "Forest carbon 2", "pct": null, "tracciato": false, "sessioni_titoli": [], "collegamenti": [], "traguardi": [], "scadenza": null, "descrizione": "", "mancano": [], "cartelle": []}, {"id": "p018", "titolo": "LiDAR and drone surveys 2", "pct": null, "tracciato": false, "sessioni_titoli": [], "collegamenti": [], "traguardi": [], "scadenza": null, "descrizione": "", "mancano": [], "cartelle": []}, {"id": "p019", "titolo": "Data for forest policy 2", "pct": null, "tracciato": false, "sessioni_titoli": [], "collegamenti": [], "traguardi": [], "scadenza": null, "descrizione": "", "mancano": [], "cartelle": []}, {"id": "p020", "titolo": "Forest monitoring 2", "pct": null, "tracciato": false, "sessioni_titoli": [], "collegamenti": [], "traguardi": [], "scadenza": null, "descrizione": "", "mancano": [], "cartelle": []}, {"id": "p021", "titolo": "Remote sensing 2", "pct": null, "tracciato": false, "sessioni_titoli": [], "collegamenti": [], "traguardi": [], "scadenza": null, "descrizione": "", "mancano": [], "cartelle": []}, {"id": "p022", "titolo": "LiDAR and drone surveys 3", "pct": null, "tracciato": false, "sessioni_titoli": [], "collegamenti": [], "traguardi": [], "scadenza": null, "descrizione": "", "mancano": [], "cartelle": []}], "sessioni": [{"id": "s001", "titolo": "Proposal evaluation", "progetto": "p016", "attiva": false, "attesa": false, "macchina": "charlie", "mc": 2, "rc": null, "madre": "", "figlie": [], "gruppo": "ALTRO", "ultima": 1795087793.445, "categoria": "", "serve_te": "", "riepilogo": "", "sintesi": "", "dettaglio": "", "giorni": {}}, {"id": "s002", "titolo": "Coordination", "progetto": "p017", "attiva": false, "attesa": false, "macchina": "alpha", "mc": 0, "rc": null, "madre": "", "figlie": [], "gruppo": "ALTRO", "ultima": 1795087790.252, "categoria": "", "serve_te": "", "riepilogo": "", "sintesi": "", "dettaglio": "", "giorni": {}}, {"id": "s003", "titolo": "Model validation", "progetto": "p011", "attiva": false, "attesa": false, "macchina": "alpha", "mc": 0, "rc": null, "madre": "", "figlie": [], "gruppo": "PROCESSI", "ultima": 1795082550.012747, "categoria": "", "serve_te": "", "riepilogo": "", "sintesi": "", "dettaglio": "", "giorni": {}}, {"id": "s004", "titolo": "Literature search", "progetto": "p003", "attiva": false, "attesa": false, "macchina": "charlie", "mc": 2, "rc": null, "madre": "", "figlie": ["s005"], "gruppo": "PAPER", "ultima": 1795080343.23, "categoria": "", "serve_te": "", "riepilogo": "", "sintesi": "", "dettaglio": "", "giorni": {}}, {"id": "s006", "titolo": "Downloading new data", "progetto": "p009", "attiva": false, "attesa": false, "macchina": "bravo", "mc": 1, "rc": null, "madre": "", "figlie": [], "gruppo": "PROCESSI", "ultima": 1795071921.137272, "categoria": "", "serve_te": "", "riepilogo": "", "sintesi": "", "dettaglio": "", "giorni": {}}, {"id": "s007", "titolo": "PhD training", "progetto": "p012", "attiva": false, "attesa": false, "macchina": "bravo", "mc": 1, "rc": null, "madre": "", "figlie": [], "gruppo": "ALTRO", "ultima": 1795019746.0072398, "categoria": "", "serve_te": "", "riepilogo": "", "sintesi": "", "dettaglio": "", "giorni": {}}, {"id": "s008", "titolo": "Teaching", "progetto": "p018", "attiva": false, "attesa": false, "macchina": "bravo", "mc": 1, "rc": null, "madre": "", "figlie": [], "gruppo": "ALTRO", "ultima": 1795019744.3027384, "categoria": "", "serve_te": "", "riepilogo": "", "sintesi": "", "dettaglio": "", "giorni": {}}, {"id": "s009", "titolo": "European project", "progetto": "p006", "attiva": false, "attesa": false, "macchina": "alpha", "mc": 0, "rc": null, "madre": "", "figlie": [], "gruppo": "ALTRO", "ultima": 1795019737.4626906, "categoria": "", "serve_te": "", "riepilogo": "", "sintesi": "", "dettaglio": "", "giorni": {}}, {"id": "s010", "titolo": "Science communication", "progetto": "p005", "attiva": false, "attesa": false, "macchina": "charlie", "mc": 2, "rc": null, "madre": "", "figlie": [], "gruppo": "ALTRO", "ultima": 1795019721.42762, "categoria": "", "serve_te": "", "riepilogo": "", "sintesi": "", "dettaglio": "", "giorni": {}}, {"id": "s011", "titolo": "PhD training 2", "progetto": "p007", "attiva": false, "attesa": false, "macchina": "bravo", "mc": 1, "rc": null, "madre": "", "figlie": [], "gruppo": "ALTRO", "ultima": 1795019721.4191136, "categoria": "", "serve_te": "", "riepilogo": "", "sintesi": "", "dettaglio": "", "giorni": {}}, {"id": "s012", "titolo": "Science communication 2", "progetto": "p004", "attiva": false, "attesa": false, "macchina": "bravo", "mc": 1, "rc": null, "madre": "", "figlie": ["s013", "s014"], "gruppo": "ALTRO", "ultima": 1795019721.4145985, "categoria": "", "serve_te": "", "riepilogo": "", "sintesi": "", "dettaglio": "", "giorni": {}}, {"id": "s015", "titolo": "Building the pipeline", "progetto": "p019", "attiva": false, "attesa": false, "macchina": "charlie", "mc": 2, "rc": null, "madre": "", "figlie": [], "gruppo": "PROCESSI", "ultima": 1795019721.4085987, "categoria": "", "serve_te": "", "riepilogo": "", "sintesi": "", "dettaglio": "", "giorni": {}}, {"id": "s013", "titolo": "Coordination 2", "progetto": "p004", "attiva": false, "attesa": false, "macchina": "bravo", "mc": 1, "rc": null, "madre": "s012", "figlie": [], "gruppo": "ALTRO", "ultima": 1795019721.407598, "categoria": "", "serve_te": "", "riepilogo": "", "sintesi": "", "dettaglio": "", "giorni": {}}, {"id": "s016", "titolo": "Journal submission", "progetto": "p015", "attiva": false, "attesa": false, "macchina": "alpha", "mc": 0, "rc": null, "madre": "", "figlie": [], "gruppo": "PAPER", "ultima": 1795019721.4050896, "categoria": "", "serve_te": "", "riepilogo": "", "sintesi": "", "dettaglio": "", "giorni": {}}, {"id": "s005", "titolo": "High-performance computing", "progetto": "p010", "attiva": false, "attesa": false, "macchina": "charlie", "mc": 2, "rc": null, "madre": "s004", "figlie": [], "gruppo": "PROCESSI", "ultima": 1795019721.3910658, "categoria": "", "serve_te": "", "riepilogo": "", "sintesi": "", "dettaglio": "", "giorni": {}}, {"id": "s017", "titolo": "Quality control", "progetto": "p010", "attiva": false, "attesa": false, "macchina": "charlie", "mc": 2, "rc": null, "madre": "", "figlie": [], "gruppo": "PROCESSI", "ultima": 1795019721.3455884, "categoria": "", "serve_te": "", "riepilogo": "", "sintesi": "", "dettaglio": "", "giorni": {}}, {"id": "s018", "titolo": "Drafting the study", "progetto": "p014", "attiva": false, "attesa": false, "macchina": "bravo", "mc": 1, "rc": null, "madre": "", "figlie": ["s019"], "gruppo": "PAPER", "ultima": 1795019721.3450828, "categoria": "", "serve_te": "", "riepilogo": "", "sintesi": "", "dettaglio": "", "giorni": {}}, {"id": "s020", "titolo": "Data processing", "progetto": "p002", "attiva": false, "attesa": false, "macchina": "charlie", "mc": 2, "rc": null, "madre": "", "figlie": [], "gruppo": "PROCESSI", "ultima": 1795019721.3325608, "categoria": "", "serve_te": "", "riepilogo": "", "sintesi": "", "dettaglio": "", "giorni": {}}, {"id": "s021", "titolo": "Analysing the results", "progetto": "p020", "attiva": false, "attesa": false, "macchina": "charlie", "mc": 2, "rc": null, "madre": "", "figlie": [], "gruppo": "PAPER", "ultima": 1794712202.388314, "categoria": "", "serve_te": "", "riepilogo": "", "sintesi": "", "dettaglio": "", "giorni": {}}, {"id": "s014", "titolo": "Proposal evaluation 2", "progetto": "p013", "attiva": false, "attesa": false, "macchina": "charlie", "mc": 2, "rc": null, "madre": "s012", "figlie": [], "gruppo": "ALTRO", "ultima": 1794712202.3873134, "categoria": "", "serve_te": "", "riepilogo": "", "sintesi": "", "dettaglio": "", "giorni": {}}, {"id": "s022", "titolo": "Teaching 2", "progetto": "p008", "attiva": false, "attesa": false, "macchina": "charlie", "mc": 2, "rc": null, "madre": "", "figlie": [], "gruppo": "ALTRO", "ultima": 1794712202.3812933, "categoria": "", "serve_te": "", "riepilogo": "", "sintesi": "", "dettaglio": "", "giorni": {}}, {"id": "s019", "titolo": "European project 2", "progetto": "p014", "attiva": false, "attesa": false, "macchina": "bravo", "mc": 1, "rc": null, "madre": "s018", "figlie": [], "gruppo": "ALTRO", "ultima": 1794658686.9970772, "categoria": "", "serve_te": "", "riepilogo": "", "sintesi": "", "dettaglio": "", "giorni": {}}, {"id": "s023", "titolo": "Review with co-authors", "progetto": "p014", "attiva": false, "attesa": false, "macchina": "bravo", "mc": 1, "rc": null, "madre": "", "figlie": [], "gruppo": "PAPER", "ultima": 1793716428.012, "categoria": "", "serve_te": "", "riepilogo": "", "sintesi": "", "dettaglio": "", "giorni": {}}, {"id": "s024", "titolo": "Science communication 3", "progetto": "p021", "attiva": false, "attesa": false, "macchina": "bravo", "mc": 1, "rc": null, "madre": "", "figlie": [], "gruppo": "ALTRO", "ultima": 1793401307.0075235, "categoria": "", "serve_te": "", "riepilogo": "", "sintesi": "", "dettaglio": "", "giorni": {}}, {"id": "s025", "titolo": "Teaching 3", "progetto": "p022", "attiva": false, "attesa": false, "macchina": "alpha", "mc": 0, "rc": null, "madre": "", "figlie": [], "gruppo": "ALTRO", "ultima": 1793387843.1587608, "categoria": "", "serve_te": "", "riepilogo": "", "sintesi": "", "dettaglio": "", "giorni": {}}, {"id": "s026", "titolo": "European project 3", "progetto": "p022", "attiva": false, "attesa": false, "macchina": "alpha", "mc": 0, "rc": null, "madre": "", "figlie": [], "gruppo": "ALTRO", "ultima": 1793224605.279, "categoria": "", "serve_te": "", "riepilogo": "", "sintesi": "", "dettaglio": "", "giorni": {}}, {"id": "s027", "titolo": "Coordination 3", "progetto": "p022", "attiva": false, "attesa": false, "macchina": "alpha", "mc": 0, "rc": null, "madre": "", "figlie": [], "gruppo": "ALTRO", "ultima": 1793221322.05, "categoria": "", "serve_te": "", "riepilogo": "", "sintesi": "", "dettaglio": "", "giorni": {}}, {"id": "s028", "titolo": "Proposal evaluation 3", "progetto": "p022", "attiva": false, "attesa": false, "macchina": "alpha", "mc": 0, "rc": null, "madre": "", "figlie": [], "gruppo": "ALTRO", "ultima": 1793221321.891, "categoria": "", "serve_te": "", "riepilogo": "", "sintesi": "", "dettaglio": "", "giorni": {}}, {"id": "s029", "titolo": "High-performance computing 2", "progetto": "p010", "attiva": false, "attesa": false, "macchina": "charlie", "mc": 2, "rc": null, "madre": "", "figlie": [], "gruppo": "PROCESSI", "ultima": 1793221099.202, "categoria": "", "serve_te": "", "riepilogo": "", "sintesi": "", "dettaglio": "", "giorni": {}}, {"id": "s030", "titolo": "Downloading new data 2", "progetto": "p010", "attiva": false, "attesa": false, "macchina": "charlie", "mc": 2, "rc": null, "madre": "", "figlie": [], "gruppo": "PROCESSI", "ultima": 1793221098.968, "categoria": "", "serve_te": "", "riepilogo": "", "sintesi": "", "dettaglio": "", "giorni": {}}], "flussi": {"processamenti": [{"id": "q1", "progetto": "p010", "titolo": "Satellite image processing", "nota": "", "mb": 3040063.1059684753, "file": 306861, "parziale": false, "misura_t": 1795086369.6387293, "py_tot": 19, "in_corso": 0, "esterni": [], "genera": ["p003"], "sessioni": ["s005", "s017", "s029", "s030"], "attivo": false, "py": [{"nome": "config.py", "mtime": 1794441846.4494085, "attivo": false}, {"nome": "indices_03.py", "mtime": 1794441617.9066906, "attivo": false}, {"nome": "inference_04.py", "mtime": 1793023652.0504732, "attivo": false}, {"nome": "indices.py", "mtime": 1793023457.0130913, "attivo": false}, {"nome": "statistics_07.py", "mtime": 1793023450.2111762, "attivo": false}, {"nome": "calibration_07.py", "mtime": 1793023450.1963208, "attivo": false}, {"nome": "indices_04.py", "mtime": 1793023450.0754087, "attivo": false}, {"nome": "segmentation_05.py", "mtime": 1793023450.034345, "attivo": false}, {"nome": "statistics_06.py", "mtime": 1793013544.1403382, "attivo": false}, {"nome": "harmonisation_05.py", "mtime": 1793012948.1375115, "attivo": false}, {"nome": "plots_03.py", "mtime": 1793012580.3432798, "attivo": false}, {"nome": "inference_03.py", "mtime": 1793012225.840498, "attivo": false}, {"nome": "statistics_05.py", "mtime": 1793011466.5552828, "attivo": false}, {"nome": "validation_02.py", "mtime": 1793009480.862472, "attivo": false}, {"nome": "statistics_04.py", "mtime": 1793009430.9130251, "attivo": false}, {"nome": "maps_05.py", "mtime": 1793009351.3909357, "attivo": false}], "rete": {"nodi": [{"id": "model", "nome": "model", "cartella": "models", "loc": 138, "mtime": 1788214895.863, "vecchio": false, "stadio": null, "serie": null, "lang": "py", "attivo": false}, {"id": "sampling", "nome": "sampling", "cartella": "models", "loc": 155, "mtime": 1788346242.3855643, "vecchio": false, "stadio": null, "serie": null, "lang": "py", "attivo": false}, {"id": "segmentation", "nome": "segmentation", "cartella": "modules", "loc": 89, "mtime": 1788799793.9815376, "vecchio": false, "stadio": null, "serie": null, "lang": "py", "attivo": false}, {"id": "sampling_02", "nome": "sampling_02", "cartella": "modules", "loc": 76, "mtime": 1788800217.4969027, "vecchio": false, "stadio": null, "serie": null, "lang": "py", "attivo": false}, {"id": "training", "nome": "training", "cartella": "modules", "loc": 71, "mtime": 1788799513.443833, "vecchio": false, "stadio": null, "serie": null, "lang": "py", "attivo": false}, {"id": "config", "nome": "config", "cartella": "modules", "loc": 220, "mtime": 1794441846.4494085, "vecchio": false, "stadio": null, "serie": null, "lang": "py", "attivo": false}, {"id": "acquisition", "nome": "acquisition", "cartella": "modules", "loc": 77, "mtime": 1788086724.2733068, "vecchio": true, "stadio": null, "serie": null, "lang": "py", "attivo": false}, {"id": "calibration", "nome": "calibration", "cartella": "modules", "loc": 86, "mtime": 1788911871.4494283, "vecchio": false, "stadio": null, "serie": null, "lang": "py", "attivo": false}, {"id": "model_02", "nome": "model_02", "cartella": "modules", "loc": 68, "mtime": 1788919610.915438, "vecchio": false, "stadio": null, "serie": null, "lang": "py", "attivo": false}, {"id": "fase01_validation", "nome": "fase01_validation", "cartella": "modules", "loc": 137, "mtime": 1788135160.2431028, "vecchio": false, "stadio": 1, "serie": "fase", "lang": "py", "attivo": false}, {"id": "fase01_quality_check", "nome": "fase01_quality_check", "cartella": "modules", "loc": 108, "mtime": 1787735274.9327962, "vecchio": true, "stadio": 1, "serie": "fase", "lang": "py", "attivo": false}, {"id": "fase02_training", "nome": "fase02_training", "cartella": "modules", "loc": 323, "mtime": 1788288464.7754972, "vecchio": false, "stadio": 2, "serie": "fase", "lang": "py", "attivo": false}, {"id": "fase02_plots", "nome": "fase02_plots", "cartella": "modules", "loc": 189, "mtime": 1788100660.3793821, "vecchio": true, "stadio": 2, "serie": "fase", "lang": "py", "attivo": false}, {"id": "fase02_correction", "nome": "fase02_correction", "cartella": "modules", "loc": 186, "mtime": 1787743973.5820298, "vecchio": true, "stadio": 2, "serie": "fase", "lang": "py", "attivo": false}, {"id": "fase02_export", "nome": "fase02_export", "cartella": "modules", "loc": 148, "mtime": 1787735204.5072, "vecchio": false, "stadio": 2, "serie": "fase", "lang": "py", "attivo": false}, {"id": "fase03_segmentation", "nome": "fase03_segmentation", "cartella": "modules", "loc": 153, "mtime": 1788100722.4425511, "vecchio": false, "stadio": 3, "serie": "fase", "lang": "py", "attivo": false}, {"id": "fase03_acquisition", "nome": "fase03_acquisition", "cartella": "modules", "loc": 129, "mtime": 1787909941.82603, "vecchio": false, "stadio": 3, "serie": "fase", "lang": "py", "attivo": false}, {"id": "fase03_acquisition_02", "nome": "fase03_acquisition_02", "cartella": "modules", "loc": 151, "mtime": 1787910213.8718493, "vecchio": true, "stadio": 3, "serie": "fase", "lang": "py", "attivo": false}, {"id": "fase4.2_correction", "nome": "fase4.2_correction", "cartella": "modules", "loc": 486, "mtime": 1788731375.6307514, "vecchio": false, "stadio": 4.2, "serie": "fase", "lang": "py", "attivo": false}, {"id": "fase4.3_acquisition", "nome": "fase4.3_acquisition", "cartella": "modules", "loc": 293, "mtime": 1790753514.8986332, "vecchio": false, "stadio": 4.3, "serie": "fase", "lang": "py", "attivo": false}, {"id": "fase4.4_mosaic", "nome": "fase4.4_mosaic", "cartella": "modules", "loc": 112, "mtime": 1793023450.2111762, "vecchio": false, "stadio": 4.4, "serie": "fase", "lang": "py", "attivo": false}, {"id": "fase04_statistics", "nome": "fase04_statistics", "cartella": "modules", "loc": 395, "mtime": 1788291397.5992663, "vecchio": false, "stadio": 4, "serie": "fase", "lang": "py", "attivo": false}, {"id": "fase04_acquisition", "nome": "fase04_acquisition", "cartella": "modules", "loc": 332, "mtime": 1788082176.1967924, "vecchio": true, "stadio": 4, "serie": "fase", "lang": "py", "attivo": false}, {"id": "fase04_acquisition_02", "nome": "fase04_acquisition_02", "cartella": "modules", "loc": 367, "mtime": 1788013060.3617353, "vecchio": true, "stadio": 4, "serie": "fase", "lang": "py", "attivo": false}, {"id": "fase06_correction", "nome": "fase06_correction", "cartella": "modules", "loc": 131, "mtime": 1788100990.197202, "vecchio": false, "stadio": 6, "serie": "fase", "lang": "py", "attivo": false}, {"id": "fase06_calibration", "nome": "fase06_calibration", "cartella": "modules", "loc": 136, "mtime": 1788082310.5848515, "vecchio": true, "stadio": 6, "serie": "fase", "lang": "py", "attivo": false}, {"id": "fase06_quality_check", "nome": "fase06_quality_check", "cartella": "modules", "loc": 104, "mtime": 1788033843.634525, "vecchio": true, "stadio": 6, "serie": "fase", "lang": "py", "attivo": false}, {"id": "segmentation_02", "nome": "segmentation_02", "cartella": "modules", "loc": 73, "mtime": 1788800861.6861136, "vecchio": false, "stadio": null, "serie": null, "lang": "py", "attivo": false}, {"id": "calibration_02", "nome": "calibration_02", "cartella": "modules", "loc": 154, "mtime": 1787858863.6532822, "vecchio": false, "stadio": null, "serie": null, "lang": "py", "attivo": false}, {"id": "maps", "nome": "maps", "cartella": "modules", "loc": 144, "mtime": 1787861987.4471953, "vecchio": false, "stadio": null, "serie": null, "lang": "py", "attivo": false}, {"id": "export", "nome": "export", "cartella": "modules", "loc": 217, "mtime": 1788449826.4977107, "vecchio": false, "stadio": null, "serie": null, "lang": "py", "attivo": false}, {"id": "training_02", "nome": "training_02", "cartella": "modules", "loc": 191, "mtime": 1788090809.9762552, "vecchio": false, "stadio": null, "serie": null, "lang": "py", "attivo": false}, {"id": "training_03", "nome": "training_03", "cartella": "modules", "loc": 231, "mtime": 1788919358.1384032, "vecchio": false, "stadio": null, "serie": null, "lang": "py", "attivo": false}, {"id": "statistics", "nome": "statistics", "cartella": "modules", "loc": 207, "mtime": 1788791147.9213078, "vecchio": false, "stadio": null, "serie": null, "lang": "py", "attivo": false}, {"id": "inference", "nome": "inference", "cartella": "modules", "loc": 125, "mtime": 1788904214.8646085, "vecchio": false, "stadio": null, "serie": null, "lang": "py", "attivo": false}, {"id": "inference_02", "nome": "inference_02", "cartella": "modules", "loc": 69, "mtime": 1788911702.3818655, "vecchio": false, "stadio": null, "serie": null, "lang": "py", "attivo": false}, {"id": "segmentation_03", "nome": "segmentation_03", "cartella": "modules", "loc": 88, "mtime": 1788903349.7982337, "vecchio": false, "stadio": null, "serie": null, "lang": "py", "attivo": false}, {"id": "acquisition_02", "nome": "acquisition_02", "cartella": "modules", "loc": 97, "mtime": 1793023450.0754087, "vecchio": false, "stadio": null, "serie": null, "lang": "py", "attivo": false}, {"id": "acquisition_03", "nome": "acquisition_03", "cartella": "modules", "loc": 157, "mtime": 1793023652.0504732, "vecchio": false, "stadio": null, "serie": null, "lang": "py", "attivo": false}, {"id": "quality_check", "nome": "quality_check", "cartella": "modules", "loc": 310, "mtime": 1793023450.034345, "vecchio": false, "stadio": null, "serie": null, "lang": "py", "attivo": false}, {"id": "estimation", "nome": "estimation", "cartella": "modules", "loc": 33, "mtime": 1793023450.1963208, "vecchio": false, "stadio": null, "serie": null, "lang": "py", "attivo": false}, {"id": "maps_02", "nome": "maps_02", "cartella": "modules", "loc": 188, "mtime": 1788165659.856, "vecchio": false, "stadio": null, "serie": null, "lang": "py", "attivo": false}, {"id": "indices", "nome": "indices", "cartella": "modules", "loc": 245, "mtime": 1793023457.0130913, "vecchio": false, "stadio": null, "serie": null, "lang": "py", "attivo": false}, {"id": "statistics_02", "nome": "statistics_02", "cartella": "modules", "loc": 198, "mtime": 1788100255.3532095, "vecchio": true, "stadio": null, "serie": null, "lang": "py", "attivo": false}, {"id": "indices_02", "nome": "indices_02", "cartella": "modules", "loc": 170, "mtime": 1788082741.0595396, "vecchio": true, "stadio": null, "serie": null, "lang": "py", "attivo": false}, {"id": "plots", "nome": "plots", "cartella": "modules", "loc": 178, "mtime": 1788047260.1915274, "vecchio": true, "stadio": null, "serie": null, "lang": "py", "attivo": false}, {"id": "plots_02", "nome": "plots_02", "cartella": "modules", "loc": 491, "mtime": 1789088401.3232508, "vecchio": false, "stadio": null, "serie": null, "lang": "py", "attivo": false}, {"id": "harmonisation", "nome": "harmonisation", "cartella": "modules", "loc": 61, "mtime": 1787868870.9338882, "vecchio": true, "stadio": null, "serie": null, "lang": "py", "attivo": false}, {"id": "estimation_02", "nome": "estimation_02", "cartella": "modules", "loc": 179, "mtime": 1787846853.2921443, "vecchio": true, "stadio": null, "serie": null, "lang": "py", "attivo": false}, {"id": "quality_check_02", "nome": "quality_check_02", "cartella": "modules", "loc": 179, "mtime": 1787846853.2921443, "vecchio": true, "stadio": null, "serie": null, "lang": "py", "attivo": false}, {"id": "mosaic", "nome": "mosaic", "cartella": "modules", "loc": 310, "mtime": 1787735482.0961876, "vecchio": false, "stadio": null, "serie": null, "lang": "py", "attivo": false}, {"id": "statistics_03", "nome": "statistics_03", "cartella": "modules", "loc": 371, "mtime": 1789255271.9442203, "vecchio": false, "stadio": null, "serie": null, "lang": "py", "attivo": false}, {"id": "maps_03", "nome": "maps_03", "cartella": "modules", "loc": 108, "mtime": 1788742609.6055264, "vecchio": false, "stadio": null, "serie": null, "lang": "py", "attivo": false}, {"id": "calibration_03", "nome": "calibration_03", "cartella": "modules", "loc": 40, "mtime": 1787735152.0272415, "vecchio": false, "stadio": null, "serie": null, "lang": "py", "attivo": false}, {"id": "validation", "nome": "validation", "cartella": "modules", "loc": 43, "mtime": 1788906587.834941, "vecchio": false, "stadio": null, "serie": null, "lang": "py", "attivo": false}, {"id": "calibration_04", "nome": "calibration_04", "cartella": "modules", "loc": 34, "mtime": 1787832808.5624535, "vecchio": true, "stadio": null, "serie": null, "lang": "py", "attivo": false}, {"id": "training_04", "nome": "training_04", "cartella": "modules", "loc": 121, "mtime": 1787840418.9516256, "vecchio": true, "stadio": null, "serie": null, "lang": "py", "attivo": false}, {"id": "harmonisation_02", "nome": "harmonisation_02", "cartella": "modules", "loc": 84, "mtime": 1787837895.6900878, "vecchio": true, "stadio": null, "serie": null, "lang": "py", "attivo": false}, {"id": "quality_check_03", "nome": "quality_check_03", "cartella": "modules", "loc": 92, "mtime": 1787854870.5331428, "vecchio": true, "stadio": null, "serie": null, "lang": "py", "attivo": false}, {"id": "maps_04", "nome": "maps_04", "cartella": "modules", "loc": 113, "mtime": 1789086437.7719553, "vecchio": true, "stadio": null, "serie": null, "lang": "py", "attivo": false}, {"id": "correction", "nome": "correction", "cartella": "modules", "loc": 70, "mtime": 1787832604.6734755, "vecchio": true, "stadio": null, "serie": null, "lang": "py", "attivo": false}, {"id": "classification", "nome": "classification", "cartella": "modules", "loc": 17, "mtime": 1788008138.7215605, "vecchio": true, "stadio": null, "serie": null, "lang": "py", "attivo": false}, {"id": "mosaic_02", "nome": "mosaic_02", "cartella": "modules", "loc": 54, "mtime": 1789086772.625253, "vecchio": true, "stadio": null, "serie": null, "lang": "py", "attivo": false}, {"id": "estimation_03", "nome": "estimation_03", "cartella": "modules", "loc": 59, "mtime": 1788257755.5102918, "vecchio": false, "stadio": null, "serie": null, "lang": "py", "attivo": false}, {"id": "estimation_04", "nome": "estimation_04", "cartella": "modules", "loc": 73, "mtime": 1788260900.6352363, "vecchio": false, "stadio": null, "serie": null, "lang": "py", "attivo": false}, {"id": "harmonisation_03", "nome": "harmonisation_03", "cartella": "modules", "loc": 103, "mtime": 1788259771.7699096, "vecchio": false, "stadio": null, "serie": null, "lang": "py", "attivo": false}, {"id": "segmentation_04", "nome": "segmentation_04", "cartella": "modules", "loc": 198, "mtime": 1788263750.3979702, "vecchio": true, "stadio": null, "serie": null, "lang": "py", "attivo": false}, {"id": "harmonisation_04", "nome": "harmonisation_04", "cartella": "modules", "loc": 150, "mtime": 1788800871.5526097, "vecchio": false, "stadio": null, "serie": null, "lang": "py", "attivo": false}, {"id": "mosaic_03", "nome": "mosaic_03", "cartella": "modules", "loc": 156, "mtime": 1788916635.3171878, "vecchio": false, "stadio": null, "serie": null, "lang": "py", "attivo": false}, {"id": "maps_05", "nome": "maps_05", "cartella": "utilities", "loc": 34, "mtime": 1793009351.3909357, "vecchio": false, "stadio": 0, "serie": "num", "lang": "py", "attivo": false}, {"id": "export_02", "nome": "export_02", "cartella": "utilities", "loc": 84, "mtime": 1793008676.333779, "vecchio": false, "stadio": 1, "serie": "num", "lang": "py", "attivo": false}, {"id": "acquisition_04", "nome": "acquisition_04", "cartella": "utilities", "loc": 42, "mtime": 1793008763.9839752, "vecchio": false, "stadio": 2, "serie": "num", "lang": "py", "attivo": false}, {"id": "statistics_04", "nome": "statistics_04", "cartella": "utilities", "loc": 27, "mtime": 1793009430.9130251, "vecchio": false, "stadio": 3, "serie": "num", "lang": "py", "attivo": false}, {"id": "validation_02", "nome": "validation_02", "cartella": "utilities", "loc": 106, "mtime": 1793009480.862472, "vecchio": false, "stadio": 4, "serie": "num", "lang": "py", "attivo": false}, {"id": "statistics_05", "nome": "statistics_05", "cartella": "utilities", "loc": 23, "mtime": 1793011466.5552828, "vecchio": false, "stadio": 5, "serie": "num", "lang": "py", "attivo": false}, {"id": "plots_03", "nome": "plots_03", "cartella": "utilities", "loc": 78, "mtime": 1793012580.3432798, "vecchio": false, "stadio": 6, "serie": "num", "lang": "py", "attivo": false}, {"id": "inference_03", "nome": "inference_03", "cartella": "utilities", "loc": 41, "mtime": 1793012225.840498, "vecchio": false, "stadio": 7, "serie": "num", "lang": "py", "attivo": false}, {"id": "harmonisation_05", "nome": "harmonisation_05", "cartella": "utilities", "loc": 120, "mtime": 1793012948.1375115, "vecchio": false, "stadio": 8, "serie": "num", "lang": "py", "attivo": false}, {"id": "indices_03", "nome": "indices_03", "cartella": "utilities", "loc": 49, "mtime": 1794441617.9066906, "vecchio": false, "stadio": 9, "serie": "num", "lang": "py", "attivo": false}, {"id": "calibration_05", "nome": "calibration_05", "cartella": "utilities", "loc": 97, "mtime": 1793012214.4445403, "vecchio": false, "stadio": null, "serie": null, "lang": "py", "attivo": false}, {"id": "sampling_03", "nome": "sampling_03", "cartella": "utilities", "loc": 157, "mtime": 1793023610.3613677, "vecchio": false, "stadio": null, "serie": null, "lang": "py", "attivo": false}, {"id": "calibration_06", "nome": "calibration_06", "cartella": "utilities", "loc": 310, "mtime": 1793023230.2010956, "vecchio": false, "stadio": null, "serie": null, "lang": "py", "attivo": false}, {"id": "fase4.4_indices", "nome": "fase4.4_indices", "cartella": "analysis", "loc": 112, "mtime": 1793013535.5595179, "vecchio": false, "stadio": 4.4, "serie": "fase", "lang": "py", "attivo": false}, {"id": "quality_check_04", "nome": "quality_check_04", "cartella": "analysis", "loc": 33, "mtime": 1793013535.5070019, "vecchio": false, "stadio": null, "serie": null, "lang": "py", "attivo": false}, {"id": "statistics_06", "nome": "statistics_06", "cartella": "analysis", "loc": 19, "mtime": 1793013544.1403382, "vecchio": true, "stadio": null, "serie": null, "lang": "py", "attivo": false}], "archi": [["segmentation", "config", "i"], ["sampling_02", "config", "i"], ["sampling_02", "fase4.2_correction", "l"], ["training", "maps_03", "i"], ["training", "config", "i"], ["calibration", "validation", "i"], ["calibration", "config", "i"], ["model_02", "config", "i"], ["fase01_validation", "config", "i"], ["fase01_quality_check", "config", "i"], ["fase02_training", "config", "i"], ["fase02_plots", "config", "i"], ["fase02_correction", "config", "i"], ["fase02_export", "config", "i"], ["fase03_segmentation", "config", "i"], ["fase03_acquisition", "config", "i"], ["fase03_acquisition_02", "config", "i"], ["fase4.2_correction", "config", "i"], ["fase4.2_correction", "fase02_training", "l"], ["fase4.2_correction", "fase04_statistics", "l"], ["fase4.3_acquisition", "fase02_training", "i"], ["fase4.3_acquisition", "maps_03", "i"], ["fase4.3_acquisition", "validation", "i"], ["fase4.3_acquisition", "segmentation_02", "i"], ["fase4.3_acquisition", "fase03_segmentation", "i"], ["fase4.3_acquisition", "config", "i"], ["fase4.4_mosaic", "config", "i"], ["fase4.4_mosaic", "fase02_training", "i"], ["fase4.4_mosaic", "segmentation_02", "i"], ["fase4.4_mosaic", "acquisition_02", "i"], ["fase4.4_mosaic", "estimation", "i"], ["fase04_statistics", "config", "i"], ["fase04_acquisition", "config", "i"], ["fase04_acquisition_02", "config", "i"], ["fase06_correction", "config", "i"], ["fase06_calibration", "fase06_correction", "l"], ["fase06_calibration", "config", "i"], ["fase06_quality_check", "fase06_correction", "l"], ["fase06_quality_check", "config", "i"], ["segmentation_02", "config", "i"], ["segmentation_02", "fase02_training", "i"], ["calibration_02", "config", "i"], ["maps", "config", "i"], ["export", "fase4.2_correction", "i"], ["export", "config", "i"], ["training_02", "config", "i"], ["training_03", "inference_02", "i"], ["training_03", "training_02", "l"], ["training_03", "config", "i"], ["statistics", "config", "i"], ["inference", "inference_02", "i"], ["inference", "config", "i"], ["segmentation_03", "inference_02", "i"], ["segmentation_03", "config", "i"], ["quality_check", "acquisition_03", "i"], ["estimation", "acquisition_03", "i"], ["estimation", "quality_check", "i"], ["indices", "config", "i"], ["indices", "fase02_training", "i"], ["indices", "fase03_segmentation", "i"], ["indices", "fase04_statistics", "i"], ["indices", "fase01_validation", "i"], ["indices", "training_03", "i"], ["indices", "fase4.2_correction", "i"], ["indices", "fase4.3_acquisition", "i"], ["indices", "fase06_correction", "i"], ["indices", "fase4.4_mosaic", "i"], ["statistics_02", "indices", "l"], ["statistics_02", "fase01_validation", "i"], ["statistics_02", "fase02_training", "i"], ["statistics_02", "fase03_segmentation", "i"], ["statistics_02", "fase04_statistics", "i"], ["statistics_02", "fase06_correction", "i"], ["statistics_02", "config", "i"], ["indices_02", "indices", "l"], ["indices_02", "fase01_validation", "i"], ["indices_02", "fase02_training", "i"], ["indices_02", "fase03_segmentation", "i"], ["indices_02", "fase04_statistics", "i"], ["indices_02", "fase06_correction", "i"], ["indices_02", "config", "i"], ["plots", "indices", "l"], ["plots", "fase01_validation", "i"], ["plots", "fase02_training", "i"], ["plots", "fase03_segmentation", "i"], ["plots", "fase04_statistics", "i"], ["plots", "fase06_correction", "i"], ["plots", "config", "i"], ["plots_02", "fase02_training", "i"], ["plots_02", "config", "i"], ["plots_02", "inference_02", "l"], ["estimation_02", "config", "i"], ["quality_check_02", "config", "i"], ["statistics_03", "config", "i"], ["statistics_03", "plots_02", "i"], ["maps_03", "config", "i"], ["calibration_03", "config", "i"], ["training_04", "config", "i"], ["quality_check_03", "config", "i"], ["maps_04", "config", "i"], ["maps_04", "fase4.2_correction", "i"], ["correction", "config", "i"], ["classification", "config", "i"], ["mosaic_02", "config", "i"], ["mosaic_02", "plots_02", "i"], ["segmentation_04", "config", "i"], ["harmonisation_04", "maps_03", "i"], ["harmonisation_04", "segmentation_02", "i"], ["harmonisation_04", "fase02_training", "i"], ["harmonisation_04", "config", "i"], ["mosaic_03", "maps_03", "i"], ["mosaic_03", "harmonisation_04", "i"], ["mosaic_03", "validation", "i"], ["mosaic_03", "config", "i"], ["export_02", "sampling_03", "i"], ["acquisition_04", "sampling_03", "i"], ["statistics_04", "sampling_03", "i"], ["statistics_04", "calibration_06", "i"], ["validation_02", "sampling_03", "i"], ["validation_02", "calibration_06", "i"], ["statistics_05", "sampling_03", "i"], ["statistics_05", "calibration_06", "i"], ["plots_03", "config", "i"], ["plots_03", "fase02_training", "i"], ["plots_03", "segmentation_02", "i"], ["plots_03", "sampling_03", "i"], ["plots_03", "calibration_06", "i"], ["inference_03", "config", "i"], ["inference_03", "fase02_training", "i"], ["inference_03", "calibration_05", "i"], ["harmonisation_05", "sampling_03", "i"], ["harmonisation_05", "calibration_06", "i"], ["harmonisation_05", "config", "i"], ["harmonisation_05", "fase02_training", "i"], ["harmonisation_05", "segmentation_02", "i"], ["indices_03", "config", "i"], ["indices_03", "fase02_training", "i"], ["indices_03", "calibration_05", "i"], ["calibration_06", "sampling_03", "i"], ["fase4.4_indices", "config", "i"], ["fase4.4_indices", "fase02_training", "i"], ["fase4.4_indices", "segmentation_02", "i"], ["fase4.4_indices", "acquisition_02", "i"], ["fase4.4_indices", "quality_check_04", "i"], ["quality_check_04", "acquisition_03", "i"], ["quality_check_04", "quality_check", "i"], ["statistics_06", "config", "i"], ["statistics_06", "fase4.4_indices", "i"]]}}, {"id": "q2", "progetto": "p014", "titolo": "Machine-learning model optimisation", "nota": "", "mb": 216.27432918548584, "file": 1152, "parziale": false, "misura_t": 1795086369.6387293, "py_tot": 20, "in_corso": 0, "esterni": [], "genera": ["p014"], "sessioni": ["s018", "s023"], "attivo": false, "py": [{"nome": "inference.py", "mtime": 1793689683.4557128, "attivo": false}, {"nome": "maps.py", "mtime": 1793658873.3473048, "attivo": false}, {"nome": "statistics.py", "mtime": 1793658873.3453043, "attivo": false}, {"nome": "indices.py", "mtime": 1793658873.3393042, "attivo": false}, {"nome": "sampling.py", "mtime": 1793560886.5277288, "attivo": false}, {"nome": "harmonisation.py", "mtime": 1793549079.4949236, "attivo": false}, {"nome": "acquisition.py", "mtime": 1793471313.0780284, "attivo": false}, {"nome": "model_02.py", "mtime": 1793471313.0349164, "attivo": false}, {"nome": "mosaic.py", "mtime": 1793471013.860645, "attivo": false}, {"nome": "indices_03.py", "mtime": 1793403000.3603275, "attivo": false}, {"nome": "correction.py", "mtime": 1793399739.917866, "attivo": false}, {"nome": "export_02.py", "mtime": 1793355955.8703978, "attivo": false}, {"nome": "filters_02.py", "mtime": 1793264294.4889257, "attivo": false}, {"nome": "indices_02.py", "mtime": 1793262231.345625, "attivo": false}, {"nome": "export.py", "mtime": 1793262197.5260856, "attivo": false}, {"nome": "statistics_02.py", "mtime": 1793261632.32453, "attivo": false}], "rete": {"nodi": [{"id": "indices", "nome": "indices", "cartella": "processing", "loc": 122, "mtime": 1793658873.3393042, "vecchio": false, "stadio": null, "serie": null, "lang": "py", "attivo": false}, {"id": "statistics", "nome": "statistics", "cartella": "processing", "loc": 57, "mtime": 1793658873.3453043, "vecchio": false, "stadio": null, "serie": null, "lang": "py", "attivo": false}, {"id": "filters", "nome": "filters", "cartella": "processing", "loc": 16, "mtime": 1793037108.2780797, "vecchio": false, "stadio": null, "serie": null, "lang": "py", "attivo": false}, {"id": "mosaic", "nome": "mosaic", "cartella": "processing", "loc": 114, "mtime": 1793471013.860645, "vecchio": false, "stadio": null, "serie": null, "lang": "py", "attivo": false}, {"id": "statistics_02", "nome": "statistics_02", "cartella": "processing", "loc": 217, "mtime": 1793261632.32453, "vecchio": false, "stadio": null, "serie": null, "lang": "py", "attivo": false}, {"id": "export", "nome": "export", "cartella": "processing", "loc": 16, "mtime": 1793262197.5260856, "vecchio": false, "stadio": null, "serie": null, "lang": "py", "attivo": false}, {"id": "harmonisation", "nome": "harmonisation", "cartella": "processing", "loc": 725, "mtime": 1793549079.4949236, "vecchio": false, "stadio": null, "serie": null, "lang": "py", "attivo": false}, {"id": "sampling", "nome": "sampling", "cartella": "processing", "loc": 238, "mtime": 1793560886.5277288, "vecchio": false, "stadio": null, "serie": null, "lang": "py", "attivo": false}, {"id": "indices_02", "nome": "indices_02", "cartella": "processing", "loc": 82, "mtime": 1793262231.345625, "vecchio": false, "stadio": null, "serie": null, "lang": "py", "attivo": false}, {"id": "inference", "nome": "inference", "cartella": "processing", "loc": 241, "mtime": 1793689683.4557128, "vecchio": false, "stadio": null, "serie": null, "lang": "py", "attivo": false}, {"id": "model", "nome": "model", "cartella": "processing", "loc": 191, "mtime": 1793037101.7523327, "vecchio": false, "stadio": null, "serie": null, "lang": "py", "attivo": false}, {"id": "export_02", "nome": "export_02", "cartella": "processing", "loc": 221, "mtime": 1793355955.8703978, "vecchio": false, "stadio": null, "serie": null, "lang": "py", "attivo": false}, {"id": "filters_02", "nome": "filters_02", "cartella": "processing", "loc": 209, "mtime": 1793264294.4889257, "vecchio": false, "stadio": null, "serie": null, "lang": "py", "attivo": false}, {"id": "inference_02", "nome": "inference_02", "cartella": "processing", "loc": 390, "mtime": 1793037069.106705, "vecchio": false, "stadio": null, "serie": null, "lang": "py", "attivo": false}, {"id": "mosaic_02", "nome": "mosaic_02", "cartella": "processing", "loc": 42, "mtime": 1793261617.194515, "vecchio": false, "stadio": null, "serie": null, "lang": "py", "attivo": false}, {"id": "acquisition", "nome": "acquisition", "cartella": "processing", "loc": 232, "mtime": 1793471313.0780284, "vecchio": false, "stadio": null, "serie": null, "lang": "py", "attivo": false}, {"id": "model_02", "nome": "model_02", "cartella": "processing", "loc": 194, "mtime": 1793471313.0349164, "vecchio": false, "stadio": null, "serie": null, "lang": "py", "attivo": false}, {"id": "maps", "nome": "maps", "cartella": "processing", "loc": 398, "mtime": 1793658873.3473048, "vecchio": false, "stadio": null, "serie": null, "lang": "py", "attivo": false}, {"id": "correction", "nome": "correction", "cartella": "data", "loc": 25, "mtime": 1793399739.917866, "vecchio": false, "stadio": null, "serie": null, "lang": "py", "attivo": false}, {"id": "indices_03", "nome": "indices_03", "cartella": "data", "loc": 28, "mtime": 1793403000.3603275, "vecchio": false, "stadio": null, "serie": null, "lang": "py", "attivo": false}], "archi": [["filters", "model", "i"], ["export", "sampling", "i"], ["harmonisation", "acquisition", "l"], ["sampling", "harmonisation", "i"], ["sampling", "statistics_02", "i"], ["sampling", "export_02", "i"], ["sampling", "indices_02", "i"], ["sampling", "filters_02", "l"], ["model", "inference_02", "l"], ["acquisition", "model", "i"], ["acquisition", "mosaic", "i"], ["model_02", "model", "i"], ["model_02", "acquisition", "l"], ["indices_03", "harmonisation", "i"]]}}, {"id": "q3", "progetto": "p015", "titolo": "Quantum computing", "nota": "", "mb": 62.36599636077881, "file": 99, "parziale": false, "misura_t": 1795086369.6387293, "py_tot": 4, "in_corso": 0, "esterni": [], "genera": ["p015"], "sessioni": ["s016"], "attivo": false, "py": [{"nome": "indices.py", "mtime": 1791146715.258284, "attivo": false}, {"nome": "training.py", "mtime": 1791146581.6302185, "attivo": false}, {"nome": "validation.py", "mtime": 1791146526.6022863, "attivo": false}, {"nome": "calibration.py", "mtime": 1791146526.5972853, "attivo": false}], "rete": {"nodi": [{"id": "inference", "nome": "inference", "cartella": "processing 2", "loc": 452, "mtime": 1789845501.2909687, "vecchio": false, "stadio": null, "serie": null, "lang": "py", "attivo": false}, {"id": "indices", "nome": "indices", "cartella": "processing 2", "loc": 142, "mtime": 1791146715.258284, "vecchio": false, "stadio": null, "serie": null, "lang": "py", "attivo": false}, {"id": "segmentation", "nome": "segmentation", "cartella": "modules 2", "loc": 65, "mtime": 1789842955.764053, "vecchio": false, "stadio": null, "serie": null, "lang": "py", "attivo": false}, {"id": "maps", "nome": "maps", "cartella": "modules 2", "loc": 98, "mtime": 1789842803.303069, "vecchio": false, "stadio": null, "serie": null, "lang": "py", "attivo": false}, {"id": "calibration", "nome": "calibration", "cartella": "modules 2", "loc": 77, "mtime": 1791146526.5972853, "vecchio": false, "stadio": null, "serie": null, "lang": "py", "attivo": false}, {"id": "model", "nome": "model", "cartella": "modules 2", "loc": 235, "mtime": 1789845254.8365343, "vecchio": false, "stadio": null, "serie": null, "lang": "py", "attivo": false}, {"id": "calibration_02", "nome": "calibration_02", "cartella": "modules 2", "loc": 81, "mtime": 1789843033.5852203, "vecchio": false, "stadio": null, "serie": null, "lang": "py", "attivo": false}, {"id": "__init__", "nome": "__init__", "cartella": "modules 2", "loc": 1, "mtime": 1789842788.7866874, "vecchio": false, "stadio": null, "serie": null, "lang": "py", "attivo": false}, {"id": "training", "nome": "training", "cartella": "analysis 2", "loc": 50, "mtime": 1791146581.6302185, "vecchio": false, "stadio": null, "serie": null, "lang": "py", "attivo": false}, {"id": "validation", "nome": "validation", "cartella": "analysis 2", "loc": 69, "mtime": 1791146526.6022863, "vecchio": false, "stadio": null, "serie": null, "lang": "py", "attivo": false}, {"id": "plots", "nome": "plots", "cartella": "analysis 2", "loc": 29, "mtime": 1789843587.8648734, "vecchio": false, "stadio": null, "serie": null, "lang": "py", "attivo": false}], "archi": [["calibration", "model", "i"]]}}, {"id": "q4", "progetto": "p009", "titolo": "Forest variable estimation", "nota": "", "mb": 145477.67622375488, "file": 8400, "parziale": false, "misura_t": 1795086369.6387293, "py_tot": 0, "in_corso": 0, "esterni": [], "genera": ["p023"], "sessioni": ["s006"], "attivo": false, "py": [], "rete": {"nodi": [{"id": "validation", "nome": "validation", "cartella": "models 2", "loc": 115, "mtime": 1789855877.2767217, "vecchio": false, "stadio": null, "serie": null, "lang": "R", "attivo": false}, {"id": "sampling", "nome": "sampling", "cartella": "models 2", "loc": 113, "mtime": 1789855877.2797222, "vecchio": false, "stadio": null, "serie": null, "lang": "R", "attivo": false}, {"id": "calibration", "nome": "calibration", "cartella": "data 2", "loc": 47, "mtime": 1789855877.2667208, "vecchio": false, "stadio": null, "serie": null, "lang": "R", "attivo": false}, {"id": "model", "nome": "model", "cartella": "data 2", "loc": 171, "mtime": 1789855877.2747202, "vecchio": false, "stadio": null, "serie": null, "lang": "py", "attivo": false}, {"id": "indices", "nome": "indices", "cartella": "utilities 2", "loc": 138, "mtime": 1789855877.3007207, "vecchio": false, "stadio": null, "serie": null, "lang": "R", "attivo": false}, {"id": "maps", "nome": "maps", "cartella": "models 3", "loc": 330, "mtime": 1789929842.593357, "vecchio": false, "stadio": 0, "serie": "num", "lang": "R", "attivo": false}, {"id": "indices_02", "nome": "indices_02", "cartella": "models 3", "loc": 602, "mtime": 1789855877.327721, "vecchio": false, "stadio": 1, "serie": "num", "lang": "R", "attivo": false}, {"id": "quality_check", "nome": "quality_check", "cartella": "models 3", "loc": 419, "mtime": 1789855904.3400843, "vecchio": false, "stadio": 2, "serie": "num", "lang": "R", "attivo": false}, {"id": "correction", "nome": "correction", "cartella": "models 3", "loc": 374, "mtime": 1789929884.7514584, "vecchio": false, "stadio": 3, "serie": "num", "lang": "R", "attivo": false}, {"id": "correction_02", "nome": "correction_02", "cartella": "models 3", "loc": 443, "mtime": 1789943838.1681187, "vecchio": false, "stadio": 4, "serie": "num", "lang": "R", "attivo": false}, {"id": "acquisition", "nome": "acquisition", "cartella": "models 3", "loc": 273, "mtime": 1789855877.3197207, "vecchio": false, "stadio": 5, "serie": "num", "lang": "R", "attivo": false}, {"id": "statistics", "nome": "statistics", "cartella": "models 3", "loc": 88, "mtime": 1789855877.3177207, "vecchio": false, "stadio": 6, "serie": "num", "lang": "R", "attivo": false}, {"id": "segmentation", "nome": "segmentation", "cartella": "processing 3", "loc": 55, "mtime": 1789906083.8350039, "vecchio": false, "stadio": 4, "serie": "num", "lang": "R", "attivo": false}, {"id": "mosaic", "nome": "mosaic", "cartella": "processing 3", "loc": 31, "mtime": 1789906211.222047, "vecchio": false, "stadio": 5, "serie": "num", "lang": "R", "attivo": false}, {"id": "maps_02", "nome": "maps_02", "cartella": "processing 3", "loc": 95, "mtime": 1789906272.5370328, "vecchio": false, "stadio": 6, "serie": "num", "lang": "R", "attivo": false}, {"id": "plots", "nome": "plots", "cartella": "processing 3", "loc": 34, "mtime": 1789906877.0980496, "vecchio": false, "stadio": 8, "serie": "num", "lang": "R", "attivo": false}, {"id": "maps_03", "nome": "maps_03", "cartella": "processing 3", "loc": 22, "mtime": 1789907100.545404, "vecchio": false, "stadio": 9, "serie": "num", "lang": "R", "attivo": false}, {"id": "quality_check_02", "nome": "quality_check_02", "cartella": "processing 3", "loc": 17, "mtime": 1789907161.0234337, "vecchio": false, "stadio": 10, "serie": "num", "lang": "R", "attivo": false}, {"id": "calibration_02", "nome": "calibration_02", "cartella": "processing 3", "loc": 44, "mtime": 1789907227.9417868, "vecchio": false, "stadio": 11, "serie": "num", "lang": "R", "attivo": false}, {"id": "correction_03", "nome": "correction_03", "cartella": "processing 3", "loc": 38, "mtime": 1789909541.1995986, "vecchio": false, "stadio": 12, "serie": "num", "lang": "R", "attivo": false}, {"id": "filters", "nome": "filters", "cartella": "processing 3", "loc": 48, "mtime": 1789909583.3938954, "vecchio": false, "stadio": 13, "serie": "num", "lang": "R", "attivo": false}, {"id": "indices_03", "nome": "indices_03", "cartella": "processing 3", "loc": 43, "mtime": 1789909635.3804963, "vecchio": false, "stadio": 14, "serie": "num", "lang": "R", "attivo": false}, {"id": "filters_02", "nome": "filters_02", "cartella": "processing 3", "loc": 24, "mtime": 1789909724.6977363, "vecchio": false, "stadio": 15, "serie": "num", "lang": "R", "attivo": false}, {"id": "mosaic_02", "nome": "mosaic_02", "cartella": "processing 3", "loc": 31, "mtime": 1789913366.0715187, "vecchio": false, "stadio": 16, "serie": "num", "lang": "R", "attivo": false}, {"id": "segmentation_02", "nome": "segmentation_02", "cartella": "processing 3", "loc": 33, "mtime": 1789916761.0663693, "vecchio": false, "stadio": 17, "serie": "num", "lang": "R", "attivo": false}, {"id": "inference", "nome": "inference", "cartella": "processing 3", "loc": 67, "mtime": 1789938762.7234883, "vecchio": false, "stadio": 18, "serie": "num", "lang": "R", "attivo": false}, {"id": "acquisition_02", "nome": "acquisition_02", "cartella": "processing 3", "loc": 32, "mtime": 1789921205.7954, "vecchio": false, "stadio": 19, "serie": "num", "lang": "R", "attivo": false}, {"id": "training", "nome": "training", "cartella": "processing 3", "loc": 36, "mtime": 1789921401.001226, "vecchio": false, "stadio": 20, "serie": "num", "lang": "R", "attivo": false}, {"id": "filters_03", "nome": "filters_03", "cartella": "processing 3", "loc": 15, "mtime": 1789921585.334219, "vecchio": false, "stadio": 21, "serie": "num", "lang": "R", "attivo": false}, {"id": "inference_02", "nome": "inference_02", "cartella": "processing 3", "loc": 32, "mtime": 1789921761.2947953, "vecchio": false, "stadio": 22, "serie": "num", "lang": "R", "attivo": false}, {"id": "validation_02", "nome": "validation_02", "cartella": "processing 3", "loc": 21, "mtime": 1789921824.6066196, "vecchio": false, "stadio": 23, "serie": "num", "lang": "R", "attivo": false}, {"id": "model_02", "nome": "model_02", "cartella": "processing 3", "loc": 114, "mtime": 1789934994.9394298, "vecchio": false, "stadio": 24, "serie": "num", "lang": "R", "attivo": false}, {"id": "calibration_03", "nome": "calibration_03", "cartella": "processing 3", "loc": 100, "mtime": 1789937519.0813463, "vecchio": false, "stadio": 26, "serie": "num", "lang": "R", "attivo": false}, {"id": "validation_03", "nome": "validation_03", "cartella": "processing 3", "loc": 61, "mtime": 1789937166.7950797, "vecchio": false, "stadio": 27, "serie": "num", "lang": "R", "attivo": false}, {"id": "filters_04", "nome": "filters_04", "cartella": "processing 3", "loc": 132, "mtime": 1789938755.5203512, "vecchio": false, "stadio": 28, "serie": "num", "lang": "R", "attivo": false}, {"id": "mosaic_03", "nome": "mosaic_03", "cartella": "processing 3", "loc": 100, "mtime": 1789938590.482242, "vecchio": false, "stadio": 29, "serie": "num", "lang": "R", "attivo": false}, {"id": "segmentation_03", "nome": "segmentation_03", "cartella": "processing 3", "loc": 83, "mtime": 1789941192.8421032, "vecchio": false, "stadio": 30, "serie": "num", "lang": "R", "attivo": false}, {"id": "mosaic_04", "nome": "mosaic_04", "cartella": "processing 3", "loc": 42, "mtime": 1789942402.0639498, "vecchio": false, "stadio": 31, "serie": "num", "lang": "R", "attivo": false}, {"id": "export", "nome": "export", "cartella": "processing 3", "loc": 70, "mtime": 1789945614.3888893, "vecchio": false, "stadio": 32, "serie": "num", "lang": "R", "attivo": false}, {"id": "mosaic_05", "nome": "mosaic_05", "cartella": "processing 3", "loc": 89, "mtime": 1789955166.8516994, "vecchio": false, "stadio": 33, "serie": "num", "lang": "R", "attivo": false}, {"id": "classification", "nome": "classification", "cartella": "processing 3", "loc": 36, "mtime": 1789971000.80002, "vecchio": false, "stadio": 34, "serie": "num", "lang": "R", "attivo": false}, {"id": "model_03", "nome": "model_03", "cartella": "processing 3", "loc": 63, "mtime": 1790764732.2332819, "vecchio": false, "stadio": 35, "serie": "num", "lang": "R", "attivo": false}, {"id": "acquisition_03", "nome": "acquisition_03", "cartella": "processing 3", "loc": 44, "mtime": 1790764863.6980238, "vecchio": false, "stadio": 36, "serie": "num", "lang": "R", "attivo": false}, {"id": "calibration_04", "nome": "calibration_04", "cartella": "processing 3", "loc": 118, "mtime": 1791149338.66006, "vecchio": false, "stadio": 37, "serie": "num", "lang": "R", "attivo": false}, {"id": "sampling_02", "nome": "sampling_02", "cartella": "processing 3", "loc": 67, "mtime": 1789861562.815627, "vecchio": false, "stadio": null, "serie": null, "lang": "R", "attivo": false}, {"id": "acquisition_04", "nome": "acquisition_04", "cartella": "processing 3", "loc": 46, "mtime": 1789861708.6684415, "vecchio": false, "stadio": null, "serie": null, "lang": "R", "attivo": false}, {"id": "estimation", "nome": "estimation", "cartella": "processing 3", "loc": 23, "mtime": 1789861739.6361587, "vecchio": false, "stadio": null, "serie": null, "lang": "R", "attivo": false}, {"id": "segmentation_04", "nome": "segmentation_04", "cartella": "processing 3", "loc": 19, "mtime": 1789894394.5621824, "vecchio": false, "stadio": null, "serie": null, "lang": "R", "attivo": false}, {"id": "training_02", "nome": "training_02", "cartella": "processing 3", "loc": 138, "mtime": 1790882501.3055346, "vecchio": false, "stadio": null, "serie": null, "lang": "R", "attivo": false}, {"id": "validation_04", "nome": "validation_04", "cartella": "processing 3", "loc": 13, "mtime": 1789865656.1659546, "vecchio": false, "stadio": null, "serie": null, "lang": "R", "attivo": false}, {"id": "inference_03", "nome": "inference_03", "cartella": "processing 3", "loc": 24, "mtime": 1789865610.1112072, "vecchio": false, "stadio": null, "serie": null, "lang": "R", "attivo": false}, {"id": "export_02", "nome": "export_02", "cartella": "processing 3", "loc": 34, "mtime": 1789861613.3272111, "vecchio": false, "stadio": null, "serie": null, "lang": "R", "attivo": false}, {"id": "calibration_05", "nome": "calibration_05", "cartella": "processing 3", "loc": 8, "mtime": 1789941725.0168765, "vecchio": false, "stadio": null, "serie": null, "lang": "R", "attivo": false}, {"id": "acquisition_05", "nome": "acquisition_05", "cartella": "modules 3", "loc": 79, "mtime": 1789904747.301032, "vecchio": false, "stadio": 1, "serie": "num", "lang": "R", "attivo": false}, {"id": "inference_04", "nome": "inference_04", "cartella": "modules 3", "loc": 87, "mtime": 1789904753.813444, "vecchio": false, "stadio": 2, "serie": "num", "lang": "R", "attivo": false}, {"id": "acquisition_06", "nome": "acquisition_06", "cartella": "modules 3", "loc": 35, "mtime": 1789904974.670032, "vecchio": false, "stadio": 3, "serie": "num", "lang": "R", "attivo": false}, {"id": "inference_05", "nome": "inference_05", "cartella": "modules 3", "loc": 83, "mtime": 1789906133.753348, "vecchio": false, "stadio": 4, "serie": "num", "lang": "R", "attivo": false}, {"id": "indices_04", "nome": "indices_04", "cartella": "modules 3", "loc": 88, "mtime": 1789906409.0030398, "vecchio": false, "stadio": 5, "serie": "num", "lang": "R", "attivo": false}, {"id": "classification_02", "nome": "classification_02", "cartella": "modules 3", "loc": 89, "mtime": 1789906502.2628617, "vecchio": false, "stadio": 6, "serie": "num", "lang": "R", "attivo": false}, {"id": "statistics_02", "nome": "statistics_02", "cartella": "modules 3", "loc": 117, "mtime": 1789906693.0043845, "vecchio": false, "stadio": 7, "serie": "num", "lang": "R", "attivo": false}, {"id": "quality_check_03", "nome": "quality_check_03", "cartella": "modules 3", "loc": 54, "mtime": 1789906968.8257368, "vecchio": false, "stadio": 8, "serie": "num", "lang": "R", "attivo": false}, {"id": "model_04", "nome": "model_04", "cartella": "modules 3", "loc": 21, "mtime": 1789907044.3237267, "vecchio": false, "stadio": 9, "serie": "num", "lang": "R", "attivo": false}, {"id": "export_03", "nome": "export_03", "cartella": "analysis 3", "loc": 105, "mtime": 1789855877.284721, "vecchio": false, "stadio": 0, "serie": "num", "lang": "R", "attivo": false}, {"id": "export_04", "nome": "export_04", "cartella": "analysis 3", "loc": 114, "mtime": 1789855877.29672, "vecchio": false, "stadio": 1, "serie": "num", "lang": "R", "attivo": false}, {"id": "maps_04", "nome": "maps_04", "cartella": "analysis 3", "loc": 59, "mtime": 1789929864.6696415, "vecchio": false, "stadio": 2, "serie": "num", "lang": "R", "attivo": false}, {"id": "validation_05", "nome": "validation_05", "cartella": "analysis 3", "loc": 84, "mtime": 1789855877.281721, "vecchio": false, "stadio": 3, "serie": "num", "lang": "R", "attivo": false}, {"id": "statistics_03", "nome": "statistics_03", "cartella": "analysis 3", "loc": 60, "mtime": 1789855877.2907193, "vecchio": false, "stadio": 4.2, "serie": "num", "lang": "R", "attivo": false}, {"id": "training_03", "nome": "training_03", "cartella": "analysis 3", "loc": 51, "mtime": 1789855877.2927206, "vecchio": false, "stadio": 4, "serie": "num", "lang": "R", "attivo": false}, {"id": "maps_05", "nome": "maps_05", "cartella": "analysis 3", "loc": 43, "mtime": 1789855877.2897215, "vecchio": false, "stadio": 5, "serie": "num", "lang": "R", "attivo": false}, {"id": "estimation_02", "nome": "estimation_02", "cartella": "analysis 3", "loc": 75, "mtime": 1789855877.295721, "vecchio": false, "stadio": 6.2, "serie": "num", "lang": "R", "attivo": false}, {"id": "training_04", "nome": "training_04", "cartella": "analysis 3", "loc": 91, "mtime": 1789929872.4473412, "vecchio": false, "stadio": 6, "serie": "num", "lang": "R", "attivo": false}, {"id": "filters_05", "nome": "filters_05", "cartella": "analysis 3", "loc": 76, "mtime": 1789929889.000721, "vecchio": false, "stadio": 7, "serie": "num", "lang": "R", "attivo": false}, {"id": "validation_06", "nome": "validation_06", "cartella": "analysis 3", "loc": 53, "mtime": 1789855877.2937207, "vecchio": false, "stadio": 8, "serie": "num", "lang": "R", "attivo": false}, {"id": "model_05", "nome": "model_05", "cartella": "data 3", "loc": 20, "mtime": 1789855877.3347208, "vecchio": false, "stadio": 0, "serie": "num", "lang": "sbatch", "attivo": false}, {"id": "filters_06", "nome": "filters_06", "cartella": "data 3", "loc": 19, "mtime": 1789855877.33772, "vecchio": false, "stadio": 1, "serie": "num", "lang": "sbatch", "attivo": false}, {"id": "plots_02", "nome": "plots_02", "cartella": "data 3", "loc": 20, "mtime": 1789855877.3357203, "vecchio": false, "stadio": 2.2, "serie": "num", "lang": "sbatch", "attivo": false}, {"id": "model_06", "nome": "model_06", "cartella": "data 3", "loc": 18, "mtime": 1789855877.3367212, "vecchio": false, "stadio": 2, "serie": "num", "lang": "sbatch", "attivo": false}, {"id": "classification_03", "nome": "classification_03", "cartella": "data 3", "loc": 22, "mtime": 1789855877.3327208, "vecchio": false, "stadio": 3, "serie": "num", "lang": "sbatch", "attivo": false}, {"id": "plots_03", "nome": "plots_03", "cartella": "data 3", "loc": 20, "mtime": 1789855877.3397205, "vecchio": false, "stadio": 4, "serie": "num", "lang": "sbatch", "attivo": false}, {"id": "filters_07", "nome": "filters_07", "cartella": "utilities 3", "loc": 202, "mtime": 1789857642.1065488, "vecchio": false, "stadio": null, "serie": null, "lang": "R", "attivo": false}, {"id": "export_05", "nome": "export_05", "cartella": "processing 4", "loc": 106, "mtime": 1789853232.0, "vecchio": false, "stadio": 1, "serie": "num", "lang": "R", "attivo": false}, {"id": "filters_08", "nome": "filters_08", "cartella": "processing 4", "loc": 60, "mtime": 1789853232.0, "vecchio": false, "stadio": 2, "serie": "num", "lang": "R", "attivo": false}, {"id": "statistics_04", "nome": "statistics_04", "cartella": "processing 4", "loc": 112, "mtime": 1789853232.0, "vecchio": false, "stadio": 3, "serie": "num", "lang": "R", "attivo": false}, {"id": "estimation_03", "nome": "estimation_03", "cartella": "processing 4", "loc": 122, "mtime": 1789853232.0, "vecchio": false, "stadio": 4, "serie": "num", "lang": "R", "attivo": false}, {"id": "harmonisation", "nome": "harmonisation", "cartella": "processing 4", "loc": 123, "mtime": 1789853232.0, "vecchio": false, "stadio": 4, "serie": "num", "lang": "R", "attivo": false}, {"id": "indices_05", "nome": "indices_05", "cartella": "processing 4", "loc": 26, "mtime": 1789853232.0, "vecchio": false, "stadio": 5, "serie": "num", "lang": "R", "attivo": false}, {"id": "maps_06", "nome": "maps_06", "cartella": "processing 4", "loc": 700, "mtime": 1789853232.0, "vecchio": false, "stadio": null, "serie": null, "lang": "R", "attivo": false}, {"id": "validation_07", "nome": "validation_07", "cartella": "processing 4", "loc": 703, "mtime": 1789853232.0, "vecchio": false, "stadio": null, "serie": null, "lang": "R", "attivo": false}, {"id": "model_07", "nome": "model_07", "cartella": "processing 4", "loc": 67, "mtime": 1789853232.0, "vecchio": false, "stadio": null, "serie": null, "lang": "R", "attivo": false}, {"id": "estimation_04", "nome": "estimation_04", "cartella": "models 4", "loc": 78, "mtime": 1789853232.0, "vecchio": false, "stadio": 2, "serie": "num", "lang": "R", "attivo": false}, {"id": "sampling_03", "nome": "sampling_03", "cartella": "models 4", "loc": 52, "mtime": 1789853232.0, "vecchio": false, "stadio": null, "serie": null, "lang": "R", "attivo": false}, {"id": "mosaic_06", "nome": "mosaic_06", "cartella": "models 4", "loc": 574, "mtime": 1789853232.0, "vecchio": false, "stadio": null, "serie": null, "lang": "R", "attivo": false}], "archi": [["indices", "maps", "i"], ["indices", "indices_02", "i"], ["indices", "quality_check", "i"], ["indices", "correction", "i"], ["indices", "correction_02", "i"], ["indices", "acquisition", "i"], ["indices", "statistics", "i"], ["maps", "validation", "l"], ["acquisition", "statistics_03", "l"], ["maps_02", "maps", "i"], ["maps_02", "indices_02", "i"], ["maps_02", "quality_check", "i"], ["maps_02", "correction", "i"], ["maps_02", "correction_02", "i"], ["maps_02", "acquisition", "i"], ["maps_02", "statistics", "i"], ["maps_02", "validation_07", "l"], ["calibration_02", "maps", "i"], ["calibration_02", "indices_02", "i"], ["calibration_02", "quality_check", "i"], ["calibration_02", "correction", "i"], ["calibration_02", "correction_02", "i"], ["calibration_02", "acquisition", "i"], ["calibration_02", "statistics", "i"], ["correction_03", "maps", "i"], ["correction_03", "indices_02", "i"], ["correction_03", "quality_check", "i"], ["correction_03", "correction", "i"], ["correction_03", "correction_02", "i"], ["correction_03", "acquisition", "i"], ["correction_03", "statistics", "i"], ["filters_02", "maps", "i"], ["filters_02", "indices_02", "i"], ["filters_02", "quality_check", "i"], ["filters_02", "correction", "i"], ["filters_02", "correction_02", "i"], ["filters_02", "acquisition", "i"], ["filters_02", "statistics", "i"], ["model_02", "maps", "i"], ["model_02", "indices_02", "i"], ["model_02", "quality_check", "i"], ["model_02", "correction", "i"], ["model_02", "correction_02", "i"], ["model_02", "acquisition", "i"], ["model_02", "statistics", "i"], ["filters_04", "maps", "i"], ["filters_04", "indices_02", "i"], ["filters_04", "quality_check", "i"], ["filters_04", "correction", "i"], ["filters_04", "correction_02", "i"], ["filters_04", "acquisition", "i"], ["filters_04", "statistics", "i"], ["filters_04", "training_02", "l"], ["export", "maps", "i"], ["export", "indices_02", "i"], ["export", "quality_check", "i"], ["export", "correction", "i"], ["export", "correction_02", "i"], ["export", "acquisition", "i"], ["export", "statistics", "i"], ["export", "training_02", "l"], ["mosaic_05", "maps", "i"], ["mosaic_05", "indices_02", "i"], ["mosaic_05", "quality_check", "i"], ["mosaic_05", "correction", "i"], ["mosaic_05", "correction_02", "i"], ["mosaic_05", "acquisition", "i"], ["mosaic_05", "statistics", "i"], ["mosaic_05", "training_02", "l"], ["calibration_04", "maps", "i"], ["calibration_04", "indices_02", "i"], ["calibration_04", "quality_check", "i"], ["calibration_04", "correction", "i"], ["calibration_04", "correction_02", "i"], ["calibration_04", "acquisition", "i"], ["calibration_04", "statistics", "i"], ["calibration_04", "training_02", "l"], ["sampling_02", "export_05", "l"], ["acquisition_04", "export_05", "l"], ["acquisition_05", "export_05", "l"], ["inference_04", "validation_07", "l"], ["inference_04", "statistics_04", "l"], ["inference_05", "validation_07", "l"], ["indices_04", "validation_07", "l"], ["classification_02", "validation_07", "l"], ["statistics_02", "validation_07", "l"], ["quality_check_03", "validation_07", "l"], ["export_03", "maps", "i"], ["export_03", "indices_02", "i"], ["export_03", "quality_check", "i"], ["export_03", "correction", "i"], ["export_03", "correction_02", "i"], ["export_03", "acquisition", "i"], ["export_03", "statistics", "i"], ["export_04", "maps", "i"], ["export_04", "indices_02", "i"], ["export_04", "quality_check", "i"], ["export_04", "correction", "i"], ["export_04", "correction_02", "i"], ["export_04", "acquisition", "i"], ["export_04", "statistics", "i"], ["maps_04", "maps", "i"], ["maps_04", "indices_02", "i"], ["maps_04", "quality_check", "i"], ["maps_04", "correction", "i"], ["maps_04", "correction_02", "i"], ["maps_04", "acquisition", "i"], ["maps_04", "statistics", "i"], ["validation_05", "maps", "i"], ["validation_05", "indices_02", "i"], ["validation_05", "quality_check", "i"], ["validation_05", "correction", "i"], ["validation_05", "correction_02", "i"], ["validation_05", "acquisition", "i"], ["validation_05", "statistics", "i"], ["statistics_03", "maps", "i"], ["statistics_03", "indices_02", "i"], ["statistics_03", "quality_check", "i"], ["statistics_03", "correction", "i"], ["statistics_03", "correction_02", "i"], ["statistics_03", "acquisition", "i"], ["statistics_03", "statistics", "i"], ["training_03", "maps", "i"], ["training_03", "indices_02", "i"], ["training_03", "quality_check", "i"], ["training_03", "correction", "i"], ["training_03", "correction_02", "i"], ["training_03", "acquisition", "i"], ["training_03", "statistics", "i"], ["maps_05", "maps", "i"], ["maps_05", "indices_02", "i"], ["maps_05", "quality_check", "i"], ["maps_05", "correction", "i"], ["maps_05", "correction_02", "i"], ["maps_05", "acquisition", "i"], ["maps_05", "statistics", "i"], ["estimation_02", "maps", "i"], ["estimation_02", "indices_02", "i"], ["estimation_02", "quality_check", "i"], ["estimation_02", "correction", "i"], ["estimation_02", "correction_02", "i"], ["estimation_02", "acquisition", "i"], ["estimation_02", "statistics", "i"], ["training_04", "maps", "i"], ["training_04", "indices_02", "i"], ["training_04", "quality_check", "i"], ["training_04", "correction", "i"], ["training_04", "correction_02", "i"], ["training_04", "acquisition", "i"], ["training_04", "statistics", "i"], ["filters_05", "maps", "i"], ["filters_05", "indices_02", "i"], ["filters_05", "quality_check", "i"], ["filters_05", "correction", "i"], ["filters_05", "correction_02", "i"], ["filters_05", "acquisition", "i"], ["filters_05", "statistics", "i"], ["validation_06", "maps", "i"], ["validation_06", "indices_02", "i"], ["validation_06", "quality_check", "i"], ["validation_06", "correction", "i"], ["validation_06", "correction_02", "i"], ["validation_06", "acquisition", "i"], ["validation_06", "statistics", "i"], ["model_05", "statistics_03", "l"], ["model_05", "validation", "l"], ["filters_06", "validation", "l"], ["filters_06", "maps_04", "l"], ["plots_02", "validation", "l"], ["plots_02", "estimation_02", "l"], ["model_06", "validation", "l"], ["model_06", "training_04", "l"], ["classification_03", "filters_05", "l"], ["classification_03", "validation", "l"], ["plots_03", "validation", "l"], ["plots_03", "validation_06", "l"], ["filters_07", "maps", "i"], ["filters_07", "indices_02", "i"], ["filters_07", "quality_check", "i"], ["filters_07", "correction", "i"], ["filters_07", "correction_02", "i"], ["filters_07", "acquisition", "i"], ["filters_07", "statistics", "i"], ["export_05", "validation_07", "i"], ["filters_08", "validation_07", "i"], ["statistics_04", "validation_07", "i"], ["sampling_03", "mosaic_06", "i"]]}}], "paper": [{"id": "p003", "tipo": "paper", "titolo": "Study: satellite data for forests", "pct": 0.38571428571428573, "nota_completamento": "", "scadenza": null, "token": 7098316, "token_cache": 386561593, "sessioni": ["s004"], "attivo": false}, {"id": "p014", "tipo": "paper", "titolo": "Study: machine learning and remote sensing", "pct": 0.5357142857142857, "nota_completamento": "", "scadenza": null, "token": 4087156, "token_cache": 120554971, "sessioni": ["s018", "s023"], "attivo": false}, {"id": "p015", "tipo": "paper", "titolo": "Study: quantum computing for geomatics", "pct": 0.35714285714285715, "nota_completamento": "", "scadenza": null, "token": 3900907, "token_cache": 194748174, "sessioni": ["s016"], "attivo": false}, {"id": "p023", "tipo": "report", "titolo": "Study: national forest inventory", "pct": 1.0, "nota_completamento": "", "scadenza": null, "token": 9932326, "token_cache": 342625288, "sessioni": ["s006"], "attivo": false}]}};
+const $app = document.getElementById('app');
+const NS = 'http://www.w3.org/2000/svg';
+const h = (t, a, ...k) => { const e = document.createElement(t);
+  for (const [n, v] of Object.entries(a || {})) { if (v == null || v === false) continue;
+    if (n === 'class') e.className = v; else e.setAttribute(n, v === true ? '' : v); }
+  for (const c of k.flat(9)) { if (c == null || c === false) continue; e.append(c.nodeType ? c : document.createTextNode(c)); }
+  return e; };
+const sv = (t, a, ...k) => { const e = document.createElementNS(NS, t);
+  for (const [n, v] of Object.entries(a || {})) { if (v != null) e.setAttribute(n, v); }
+  for (const c of k.flat(9)) { if (c != null) e.append(c.nodeType ? c : document.createTextNode(c)); }
+  return e; };
+const MESI = ['gen','feb','mar','apr','mag','giu','lug','ago','set','ott','nov','dic'];
+const GIORNI = ['dom','lun','mar','mer','gio','ven','sab'];
+const pad = (n) => String(n).padStart(2, '0');
+const fmtDT = (t) => { const d = new Date(t * 1000); return GIORNI[d.getDay()] + ' ' + pad(d.getDate()) + '/' + pad(d.getMonth() + 1) + ' ' + pad(d.getHours()) + ':' + pad(d.getMinutes()); };
+const ago = (t) => { const s = D.generato - t; if (s < 90) return 'ora'; if (s < 3600) return Math.round(s / 60) + ' min fa';
+  if (s < 86400) return Math.round(s / 3600) + ' h fa'; return Math.round(s / 86400) + ' g fa'; };
+const dataIt = (d) => d.getDate() + ' ' + MESI[d.getMonth()];
+const giorni = (iso) => { const [y, m, g] = iso.split('-').map(Number); const d = new Date(y, m - 1, g, 23, 59);
+  return { d, n: Math.floor((d - D.generato * 1000) / 864e5) }; };
+const pc = (x) => Math.round(x * 100);
+const num = (x) => Number(x).toLocaleString('it');
+
+function stato(s) {
+  if (s.attiva) return { k: 'run', g: '●', t: 'in lavoro' };
+  if (s.attesa) return { k: 'warn', g: '▲', t: s.categoria === 'review_ready' ? 'da rivedere' : 'aspetta te' };
+  if (s.categoria === 'completed') return { k: 'done', g: '✓', t: 'concluso' };
+  return { k: 'idle', g: '○', t: 'ferma' };
+}
+const pill = (k, g, t) => h('span', { class: 'pill ' + k }, h('span', { class: 'ic' }, g), t);
+const link = (s, testo) => h('a', { href: 'claude://claude.ai/epitaxy/' + s.id, title: 'Apri la sessione nell\'app Claude' }, testo);
+const mdot = (mc, nome) => h('span', { class: 'dot mc' + mc, title: nome });
+function statoProgetto(p, ss) {
+  if (p.pct != null && p.pct >= 1) return ['done', '✓', 'completato'];
+  if (p.scadenza && giorni(p.scadenza).n < 0) return ['bad', '✕', 'scaduto'];
+  if (ss.some(s => s.attesa)) return ['warn', '▲', 'aspetta te'];
+  if (ss.some(s => s.attiva)) return ['run', '●', 'in lavoro'];
+  return ['idle', '○', ss.length ? 'ferma' : 'nessuna sessione'];
+}
+function spark(st) {
+  if (!st || st.length < 2) return null;
+  const W = 120, H = 22, n = st.length;
+  const pts = st.map(([_, v], i) => (2 + (W - 4) * i / (n - 1)).toFixed(1) + ',' + (H - 2 - v * (H - 4)).toFixed(1)).join(' ');
+  return sv('svg', { class: 'sp', viewBox: `0 0 ${W} ${H}`, width: W, height: H, role: 'img', 'aria-label': 'andamento dell\'avanzamento' },
+    sv('title', {}, 'Avanzamento dal ' + st[0][0] + ': da ' + pc(st[0][1]) + '% a ' + pc(st[n - 1][1]) + '%'),
+    sv('polyline', { points: pts, fill: 'none', stroke: 'var(--s1)', 'stroke-width': 1.6, 'stroke-linejoin': 'round' }));
+}
+function scadenza(p) {
+  if (!p.scadenza) return null;
+  const dl = giorni(p.scadenza);
+  const cl = dl.n < 0 ? ' bad' : dl.n <= 14 ? ' warn' : '';
+  return h('div', { class: 'm' + cl }, 'Scadenza ' + dataIt(dl.d) + ' ' + dl.d.getFullYear() + ' · ' + (dl.n < 0 ? 'scaduta da ' + (-dl.n) + ' g' : dl.n === 0 ? 'oggi' : 'tra ' + dl.n + ' g'));
+}
+
+function report(p) {
+  if (!p.ha_report) return null;
+  const aperti = p.mancano.filter(x => !x.fatto).map(x => ({ ...x, n: x.entro ? giorni(x.entro).n : null }))
+    .sort((a, b) => (a.n == null) - (b.n == null) || a.n - b.n);
+  const scad = (x) => x.n == null ? '' : ' · entro ' + dataIt(giorni(x.entro).d) + (x.n < 0 ? ' (scaduto da ' + (-x.n) + ' g)' : x.n === 0 ? ' (oggi)' : ' (tra ' + x.n + ' g)');
+  return [
+    p.stato_tecnico ? h('div', { class: 'tec' }, p.stato_tecnico) : null,
+    aperti.length ? h('ul', { class: 'mk' }, aperti.slice(0, 5).map(x => h('li', { class: x.n != null && x.n < 0 ? 'bad' : x.n != null && x.n <= 7 ? 'warn' : '', title: x.nota || '' }, x.titolo + scad(x))),
+      aperti.length > 5 ? h('li', { class: 'more' }, '+ altri ' + (aperti.length - 5)) : null) : null,
+    p.aggiornato ? h('div', { class: 'm' }, 'Report della sessione del ' + dataIt(giorni(p.aggiornato).d)) : null];
+}
+
+function schedaProgetto(p) {
+  const ss = D.sessioni.filter(s => s.progetto === p.id);
+  const st = statoProgetto(p, ss), tr = p.traguardi, fatti = tr.filter(t => t.stato === 'fatto').length;
+  const prossimo = tr.find(t => t.stato !== 'fatto');
+  const att = ss.filter(s => s.attesa).length, lav = ss.filter(s => s.attiva).length;
+  const coll = p.collegamenti || [];
+  const tag = coll.length === 1 ? 'a' : 'div';
+  return h(tag, { class: 'pc', href: coll.length === 1 ? coll[0].url : null },
+    h('div', { class: 'h' }, h('div', { class: 't' }, p.titolo), pill(...st)),
+    p.pct != null ? [
+      h('div', { class: 'pct' }, pc(p.pct) + '%', h('small', {}, tr.length ? fatti + ' / ' + tr.length + ' traguardi' : '')),
+      h('div', { class: 'track' + (lav ? ' live' : '') }, h('div', { class: 'fill', style: 'width:' + pc(p.pct) + '%' })),
+      tr.length ? h('div', { class: 'steps', 'aria-hidden': 'true' }, tr.map(t => h('i', { title: t.titolo + ' — ' + t.stato }, t.avanzamento > 0 ? h('b', { style: 'width:' + pc(t.avanzamento) + '%' }) : null))) : null,
+    ] : null,
+    scadenza(p),
+    prossimo ? h('div', { class: 'm' }, 'Prossimo passo: ' + prossimo.titolo) : null,
+    report(p),
+    p.calcoli.filter(c => c.pct != null).map(c => h('div', { class: 'm' }, c.titolo + ': ' + num(c.fatto) + ' / ' + num(c.totale) + (c.unita ? ' ' + c.unita : ''), h('div', { class: 'track s' }, h('div', { class: 'fill', style: 'width:' + pc(Math.min(1, c.pct)) + '%' })))),
+    h('div', { class: 'm' }, ss.length + (ss.length === 1 ? ' sessione' : ' sessioni') + (lav ? ' · ' + lav + ' in lavoro' : '') + (att ? ' · ' + att + ' aspetta te' : '') + (ss.some(s => s.rc === false) ? ' · RC spento su ' + ss.filter(s => s.rc === false).length : '') + (ss.length ? ' · ultima ' + ago(Math.max(...ss.map(s => s.ultima))) : '')),
+    p.sintesi ? h('div', { class: 'm' }, p.sintesi) : null,
+    spark(p.storia),
+    coll.length === 1 ? h('div', { class: 'go' }, coll[0].titolo + ' ↗')
+      : coll.length ? h('div', { class: 'chips' }, coll.map(c => h('a', { class: 'chip', href: c.url }, c.titolo + ' ↗'))) : null);
+}
+function schedaMini(p) {
+  const ss = D.sessioni.filter(s => s.progetto === p.id), st = statoProgetto(p, ss);
+  return h('div', { class: 'pc' }, h('div', { class: 'h' }, h('div', { class: 't' }, p.titolo), pill(...st)),
+    p.descrizione ? h('div', { class: 'm' }, p.descrizione) : null,
+    report(p),
+    h('div', { class: 'm' }, ss.length + (ss.length === 1 ? ' sessione' : ' sessioni') + ' · ultima attività ' + ago(Math.max(...ss.map(s => s.ultima)))),
+    ss.some(s => s.attesa) ? h('div', { class: 'm warn' }, '▲ ' + ss.filter(s => s.attesa).length + ' aspetta te') : null,
+    (p.collegamenti || []).length ? h('div', { class: 'chips' }, p.collegamenti.map(c => h('a', { class: 'chip', href: c.url }, c.titolo + ' ↗'))) : null);
+}
+function schedaDettaglio(c) {
+  const ok = c.aggiornato != null;
+  return h('a', { class: 'pc', href: c.url },
+    h('div', { class: 'h' }, h('div', { class: 't' }, c.titolo), pill(ok ? 'idle' : 'bad', ok ? '↗' : '✕', ok ? 'apri' : 'non trovato')),
+    c.pct != null ? [h('div', { class: 'pct' }, pc(c.pct) + '%', h('small', {}, num(c.fatto) + ' / ' + num(c.totale) + (c.unita ? ' ' + c.unita : ''))),
+      h('div', { class: 'track' }, h('div', { class: 'fill', style: 'width:' + pc(Math.min(1, c.pct)) + '%' }))] : null,
+    c.descrizione ? h('div', { class: 'm' }, c.descrizione) : null,
+    ok ? h('div', { class: 'm' }, 'Pagina aggiornata ' + fmtDT(c.aggiornato)) : null,
+    h('div', { class: 'm' }, 'Progetto: ' + c.progetto));
+}
+
+function schedaAgente(a) {
+  const st = !a.attivo ? ['idle', '○', 'disattivato'] : a.ritardo ? ['warn', '▲', 'in ritardo'] : ['ok', '●', 'attivo'];
+  return h('div', { class: 'pc' }, h('div', { class: 'h' }, h('div', { class: 't' }, a.titolo), pill(...st)),
+    a.descrizione ? h('div', { class: 'm' }, a.descrizione) : null,
+    a.frequenza ? h('div', { class: 'm' }, 'Quando: ' + a.frequenza) : null,
+    h('div', { class: 'm' }, 'Ultimo giro: ' + (a.ultimo ? fmtDT(a.ultimo) : 'ancora nessuno') + ' · prossimo: ' + (a.prossimo ? fmtDT(a.prossimo) : '–')),
+    a.ritardo ? h('div', { class: 'm warn' }, 'Il prossimo giro è scaduto da più di 2 ore: l\'app Claude potrebbe essere chiusa.') : null);
+}
+function schedaWin(a) {
+  const st = !a.trovata ? ['bad', '✕', 'non trovata'] : !a.attivo ? ['idle', '○', 'disattivata'] : !a.ok ? ['bad', '✕', 'esito ' + a.esito] : a.in_esecuzione ? ['run', '●', 'in esecuzione'] : ['ok', '●', 'attiva'];
+  return h('div', { class: 'pc' }, h('div', { class: 'h' }, h('div', { class: 't' }, a.nome), pill(...st)),
+    a.descrizione ? h('div', { class: 'm' }, a.descrizione) : null,
+    a.trovata ? h('div', { class: 'm' }, 'Ultimo giro: ' + (a.ultima ? fmtDT(a.ultima) : 'mai') + ' · prossimo: ' + (a.prossima && a.attivo ? fmtDT(a.prossima) : '–')) : null);
+}
+
+function tabellaSessioni(sess) {
+  const righe = sess.slice().sort((a, b) => b.ultima - a.ultima);
+  return h('div', { class: 'card', style: 'padding:6px 10px' }, h('table', {},
+    h('thead', {}, h('tr', {}, h('th', {}, 'Stato'), h('th', {}, 'Sessione'), h('th', { class: 'hide-s' }, 'Progetto'), h('th', { class: 'nw' }, 'Macchina'), h('th', { class: 'nw', title: 'Remote Control: deve essere sempre attivo' }, 'RC'), h('th', { class: 'nw' }, 'Ultima attività'))),
+    h('tbody', {}, righe.map(s => {
+      const st = stato(s), prj = D.progetti.find(p => p.id === s.progetto), testo = s.serve_te || s.sintesi || s.dettaglio;
+      return h('tr', {}, h('td', { class: 'nw' }, pill(st.k, st.g, st.t)),
+        h('td', {}, link(s, s.titolo), testo ? h('div', { class: 'd' }, testo) : null),
+        h('td', { class: 'hide-s' }, prj ? prj.titolo : ''),
+        h('td', { class: 'nw' }, mdot(s.mc, s.macchina), s.macchina),
+        h('td', { class: 'nw' }, s.rc === true ? pill('ok', '●', 'attivo') : s.rc === false ? pill('bad', '✕', 'spento') : h('span', { class: 'sub' }, '–')),
+        h('td', { class: 'nw', title: fmtDT(s.ultima) }, ago(s.ultima)));
+    }))));
+}
+
+function attivita(sess) {
+  const GG = 14, W = 1000, L = 270, R = 44, T = 36, RH = 26, GAP = 3;
+  const oggi = new Date(D.generato * 1000); oggi.setHours(0, 0, 0, 0);
+  const iso = (d) => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+  const dd = []; for (let i = GG - 1; i >= 0; i--) { const d = new Date(oggi); d.setDate(d.getDate() - i); dd.push(d); }
+  const t0 = dd[0].getTime() / 1000;
+  const ordP = {}; sess.forEach(s => { ordP[s.progetto] = Math.max(ordP[s.progetto] || 0, s.ultima); });
+  const righe = sess.filter(s => s.ultima >= t0).sort((a, b) => ordP[b.progetto] - ordP[a.progetto] || (a.progetto > b.progetto ? 1 : -1) || b.ultima - a.ultima);
+  if (!righe.length) return h('div', { class: 'empty' }, 'Nessuna sessione attiva negli ultimi ' + GG + ' giorni.');
+  const H = T + righe.length * RH + 8, cw = (W - L - R) / GG;
+  const svg = sv('svg', { viewBox: `0 0 ${W} ${H}`, role: 'img', 'aria-label': 'Risposte di ogni sessione, giorno per giorno, negli ultimi ' + GG + ' giorni' });
+  dd.forEach((d, i) => {
+    const x = L + i * cw + cw / 2, nuovoMese = i === 0 || d.getDate() === 1, we = d.getDay() === 0 || d.getDay() === 6;
+    svg.append(sv('text', { x, y: T - 8, 'text-anchor': 'middle', class: i === GG - 1 ? 'hoggi' : we ? 'hwe' : '' }, d.getDate()));
+    if (nuovoMese) svg.append(sv('text', { x, y: T - 22, 'text-anchor': 'middle', class: 'hmese' }, MESI[d.getMonth()]));
+  });
+  let prec = null;
+  righe.forEach((s, i) => {
+    const y = T + i * RH, st = stato(s), prj = D.progetti.find(p => p.id === s.progetto);
+    if (prec !== null && prec !== s.progetto) svg.append(sv('line', { x1: 0, x2: W, y1: y - 1.5, y2: y - 1.5, class: 'sep' }));
+    prec = s.progetto;
+    const nome = (prj ? prj.titolo : '') + ' · ' + s.titolo;
+    const lab = sv('text', { x: L - 10, y: y + 16, 'text-anchor': 'end', class: 'lbl' }, nome.length > 40 ? nome.slice(0, 39) + '…' : nome);
+    lab.append(sv('title', {}, nome)); svg.append(lab);
+    const g = Object.keys(s.giorni || {}).length ? s.giorni : { [iso(new Date(s.ultima * 1000))]: 1 };
+    dd.forEach((d, j) => {
+      const n = g[iso(d)] || 0, x = L + j * cw + GAP / 2;
+      svg.append(sv('rect', { x, y: y + 2, width: cw - GAP, height: RH - 5, rx: 3, class: n ? 'cell mc' + s.mc : 'cell0',
+        style: n ? 'opacity:' + (0.22 + 0.78 * Math.min(1, Math.log1p(n) / Math.log1p(120))).toFixed(2) : null },
+        sv('title', {}, s.titolo + ' — ' + dataIt(d) + ': ' + (n ? n + (n === 1 ? ' risposta' : ' risposte') : 'nessuna attività'))));
+    });
+    svg.append(sv('text', { x: W - R + 18, y: y + 17, 'text-anchor': 'middle', class: 'gl e-' + (st.k === 'warn' ? 'wait' : st.k === 'done' ? 'ok' : st.k) }, st.g, sv('title', {}, st.t)));
+  });
+  return h('div', { class: 'tl' }, svg);
+}
+
+let ANIM = true;
+try { ANIM = localStorage.getItem('anim') !== '0'; } catch (e) {}
+function applyAnim() { document.documentElement.classList.toggle('noanim', !ANIM);
+  const b = document.getElementById('animbtn'); if (b) { b.textContent = 'Animazioni: ' + (ANIM ? 'sì' : 'no'); b.setAttribute('aria-pressed', ANIM); } }
+
+function render() {
+  if (!D) { $app.append(h('p', {}, 'Aprire index.html dopo aver lanciato raccogli.py.')); return; }
+  document.title = D.titolo;
+  if (D.web) { HUD.web = true; HUD.sim = true; }
+  const sess = D.sessioni, lav = sess.filter(s => s.attiva), att = sess.filter(s => s.attesa).sort((a, b) => b.ultima - a.ultima);
+  const tracc = D.progetti.filter(p => p.pct != null), altri = D.progetti.filter(p => p.pct == null && sess.some(s => s.progetto === p.id));
+  const scad = D.progetti.filter(p => p.scadenza).map(p => ({ p, n: giorni(p.scadenza).n })).filter(x => x.n >= 0).sort((a, b) => a.n - b.n)[0];
+  const media = tracc.length ? tracc.reduce((a, p) => a + p.pct, 0) / tracc.length : null;
+  const fresche = D.macchine.filter(m => m.fresca).length;
+  const dettagli = D.progetti.flatMap(p => (p.collegamenti || []).map(c => ({ ...c, progetto: p.titolo })));
+  const eta = (Date.now() / 1000 - D.generato) / 60;
+  const ag = D.agenti || { claude: [], windows: [] };
+  const agAttivi = ag.claude.filter(a => a.attivo && !a.ritardo).length + ag.windows.filter(a => a.trovata && a.attivo && a.ok).length;
+  const agProblemi = ag.claude.filter(a => a.attivo && a.ritardo).length + ag.windows.filter(a => a.attivo && (!a.trovata || !a.ok)).length;
+  const conRc = sess.filter(s => s.rc != null), rcNote = { tot: conRc.length, off: conRc.filter(s => !s.rc).length, nomi: conRc.filter(s => !s.rc).map(s => s.titolo) };
+
+  const nPr = D.flussi ? D.flussi.processamenti.length : 0, nPa = D.flussi ? D.flussi.paper.length : 0;
+  $app.append(HUD.barra(D.web ? { sx: 'geolab · calcolo e dati', dx: [['macchine', D.macchine.length], ['processi', nPr], ['paper', nPa]] } : { sx: 'claude code · ~/dashboard', dx: [['sessioni', sess.length], ['al lavoro', lav.length], ['aspettano', att.length, att.length ? 'w' : ''],
+    ['scadenza', scad ? scad.n + ' g' : '–'], ['macchine', fresche + '/' + D.macchine.length]] }));
+  $app.append(h('div', { class: 'top' },
+    h('div', {}, h('h1', {}, D.titolo), h('div', { class: 'sub' }, D.web ? (D.web_sub || '') + ' ' + fmtDT(D.generato) : 'Aggiornato ' + fmtDT(D.generato) + ' · la pagina si ricarica da sola ogni ' + Math.round(D.aggiorna_s / 60) + ' minuti · sessioni Claude e avanzamento dei progetti')),
+    D.web ? null : att.length ? pill('warn', '▲', att.length + (att.length === 1 ? ' sessione aspetta te' : ' sessioni aspettano te')) : pill('ok', '●', 'nessuna sessione in attesa')));
+  if (eta > 8 && !D.web) $app.append(h('div', { class: 'stale', style: 'display:block' }, 'Data not updated.'));
+
+  $app.append(h('nav', { class: 'nav' },
+    D.web ? null : h('a', { href: '#panoramica' }, 'Panoramica'), D.web ? null : h('a', { href: '#progetti' }, 'Progetti'),
+    D.web ? null : dettagli.length ? h('a', { href: '#dettaglio' }, 'Cruscotti di dettaglio') : null, D.web ? null : (D.agenti && (D.agenti.claude.length || D.agenti.windows.length)) ? h('a', { href: '#agenti' }, 'Agenti') : null, D.web ? null : h('a', { href: '#sessioni' }, 'Sessioni'), D.web ? null : h('a', { href: '#attivita' }, 'Attività'),
+    D.web ? null : dettagli.map(c => h('a', { class: 'ext', href: c.url, title: c.descrizione || '' }, c.titolo + ' ↗')),
+    h('span', { class: 'sp' }), D.web ? null : HUD.bottone(), h('button', { id: 'animbtn', type: 'button', 'aria-pressed': 'true', onclick: null }, 'Animazioni: sì')));
+
+  const verbo = (s) => s.attiva ? 'run' : s.attesa ? 'ask' : s.categoria === 'completed' ? 'done' : 'idle';
+  const PRm = D.processi || {}, tit = Object.fromEntries(sess.map(s => [s.id, s.titolo])), titP = Object.fromEntries(D.progetti.map(p => [p.id, p.titolo]));
+  const idP = (id) => (id && !String(id).startsWith('auto:')) ? id : (id ? 'altri' : null);
+  const progMappa = D.progetti.filter(p => p.tracciato && sess.some(s => s.progetto === p.id)).map(p => ({ id: p.id, titolo: p.titolo, pct: p.pct }));
+  if (sess.some(s => String(s.progetto).startsWith('auto:'))) progMappa.push({ id: 'altri', titolo: 'Altri progetti', pct: null });
+  const tuttiProc = [];
+  D.macchine.forEach(m => ((PRm[m.nome] || {}).lista || []).forEach(x => tuttiProc.push(Object.assign({}, x, { macchina: m.nome, progetto: idP(x.progetto), progettoTit: titP[x.progetto] || '', sessioneTitolo: tit[x.sessione] || '' }))));
+  const rete = {
+    macchine: D.macchine.map(m => ({ nome: m.nome, mc: m.mc, fresca: m.fresca && !m.atteso, atteso: !!m.atteso, t: m.t || 0, cpu: m.cpu_pct, mem: m.mem_pct, mem_gb: m.mem_gb, ncpu: m.ncpu, gpu: m.gpu })),
+    progetti: progMappa,
+    sessioni: sess.map(s => ({ id: s.id, titolo: s.titolo, progetto: idP(s.progetto), attiva: s.attiva, attesa: s.attesa, macchina: s.macchina, rc: s.rc })),
+    processi: tuttiProc,
+    ghost: (D.flussi && D.macchine.find(mm => mm.fresca && !mm.atteso)) ? D.flussi.processamenti.map(q => ({ id: q.id, titolo: q.titolo, progetto: idP(q.progetto), macchina: D.macchine.find(mm => mm.fresca && !mm.atteso).nome, reale: q.in_corso > 0, fissa: q.macchina || null, scripts: ((q.rete && q.rete.nodi) || []).filter(n => !n.vecchio).slice(0, 80).map(n => (n.nome || n.id) + ({ py: '.py', R: '.R', sbatch: '.sbatch' }[n.lang] || '')) })) : [],
+    task: (D.agenti && D.agenti.windows || []).filter(a => a.trovata).map(a => ({ nome: a.nome, descrizione: a.descrizione, attivo: a.attivo, in_esecuzione: a.in_esecuzione, ok: a.ok })),
+  };
+  const piu = D.macchine.length > 1;
+  const righeProc = tuttiProc.slice(0, 14).map(x => ({ v: 'proc', t: (x.script || x.nome) + (x.progettoTit ? ' → ' + x.progettoTit : '') + (x.sessioneTitolo ? ' · ' + x.sessioneTitolo : ''),
+    s: (piu ? x.macchina + ' · ' : '') + (x.sessione ? 'sessione' : x.progetto ? 'solo progetto' : 'orfano') + ' · ' + (x.cpu == null ? '…' : Math.round(x.cpu * 100) + '% core') + ' · ' + x.mem_mb + ' MB', k: x.sessione ? 'run' : x.progetto ? 'warn' : 'bad' }));
+  const descr = (s) => { const p = D.progetti.find(x => x.id === s.progetto);
+    const esp = p && (p.sessioni_titoli || []).some(z => s.titolo.toLowerCase().includes(z.toLowerCase()));
+    const base = (esp && p.stato_tecnico) || s.riepilogo || s.sintesi || s.dettaglio || '';
+    const resta = esp ? (p.mancano || []).filter(x => !x.fatto).slice(0, 2).map(x => x.titolo).join('; ') : '';
+    return [base, resta ? 'Resta: ' + resta + '.' : '', s.serve_te ? '▲ Serve da te: ' + s.serve_te : ''].filter(Boolean).join(' '); };
+  const righeSess = (s) => { const st = stato(s);
+    return { v: verbo(s), t: s.titolo, rc: s.rc, d: descr(s), s: (piu ? s.macchina + ' · ' : '') + st.t + ' · ' + ago(s.ultima), k: st.k === 'warn' ? 'warn' : st.k === 'done' ? 'done' : st.k === 'run' ? 'run' : '' }; };
+  const righe = [], idS = Object.fromEntries(sess.map(s => [s.id, s])), figli = {};
+  sess.forEach(s => { if (s.madre) (figli[s.madre] = figli[s.madre] || []).push(s); });
+  const ordina = (a, b) => (b.attesa - a.attesa) || (b.attiva - a.attiva) || (b.ultima - a.ultima);
+  (D.gruppi || ['PAPER', 'PROCESSI', 'ALTRO']).forEach(g => {
+    const ins = sess.filter(s => s.gruppo === g), idG = new Set(ins.map(s => s.id));
+    const pr = g === 'PROCESSI' ? righeProc : [];
+    if (!ins.length && !pr.length) return;
+    const na = ins.filter(s => s.attesa).length, nr = ins.filter(s => s.attiva).length;
+    righe.push({ g, n: ins.length + (pr.length ? ' sessioni · ' + pr.length + (pr.length === 1 ? ' processo' : ' processi') : (ins.length === 1 ? ' sessione' : ' sessioni')) + (nr ? ' · ' + nr + ' al lavoro' : '') + (na ? ' · ' + na + ' aspettano te' : ''), warn: na > 0 });
+    pr.forEach(x => righe.push(x));
+    const aggiungi = (s, liv) => { const r = righeSess(s); r.liv = liv; const rel = [];
+      if (s.madre && !idG.has(s.madre)) rel.push('↳ figlia di «' + idS[s.madre].titolo + '» (' + idS[s.madre].gruppo + ')');
+      const fuori = (figli[s.id] || []).filter(f => !idG.has(f.id)); if (fuori.length) rel.push('→ figlie in ' + [...new Set(fuori.map(f => f.gruppo))].join('/') + ': ' + fuori.map(f => f.titolo).join(', '));
+      if (rel.length) r.rel = rel.join(' · ');
+      righe.push(r); (figli[s.id] || []).filter(f => idG.has(f.id)).sort(ordina).forEach(f => aggiungi(f, liv + 1)); };
+    ins.filter(s => !s.madre || !idG.has(s.madre)).sort(ordina).forEach(s => aggiungi(s, 0));
+  });
+  const coreTot = D.macchine.reduce((a, m) => a + (m.ncpu || 0), 0);
+  let nodoFlusso = null;
+  if (D.flussi && D.flussi.processamenti.length) {
+    const risolvi = ids => ids.map(id => idS[id]).filter(Boolean).map(s => ({ titolo: s.titolo, attiva: s.attiva, attesa: s.attesa, rc: s.rc }));
+    const f = { processamenti: D.flussi.processamenti.map(q => Object.assign({}, q, { sessioniO: risolvi(q.sessioni) })), paper: D.flussi.paper.map(p => Object.assign({}, p, { sessioniO: risolvi(p.sessioni) })) };
+    const mbTot = f.processamenti.reduce((a, q) => a + (q.mb || 0), 0), tokTot = f.paper.reduce((a, p) => a + (p.token || 0), 0);
+    nodoFlusso = (HUD.flusso({ titolo: 'Processi ⇄ paper', f, destra: f.processamenti.length + ' processi · ' + f.paper.length + ' paper · ' + (mbTot >= 1048576 ? (mbTot / 1048576).toFixed(1).replace('.', ',') + ' TB' : Math.round(mbTot / 1024) + ' GB') + ' prodotti · ' + (tokTot / 1e6).toFixed(1).replace('.', ',') + ' M token' }));
+  }
+
+  let nodoPipe = null;
+  if (D.flussi && D.flussi.processamenti.some(q => q.rete && q.rete.nodi.length)) nodoPipe = HUD.pipeline({ titolo: 'Pipeline e script', processamenti: D.flussi.processamenti.filter(q => q.rete && q.rete.nodi.length) });
+  $app.append(HUD.hero({
+    titolo: 'Macchine ⇄ sessioni', destra: D.macchine.length + (D.macchine.length === 1 ? ' macchina' : ' macchine') + (coreTot ? ' · ' + coreTot + ' core' : '') + (D.web ? ' · ' + nPr + ' processi' : ' · ' + tuttiProc.length + (tuttiProc.length === 1 ? ' processo' : ' processi')), attivi: lav.length, rete, fisso: !!D.web,
+    tra: [nodoFlusso ? nodoFlusso.firstChild : null, nodoPipe ? nodoPipe.firstChild : null],
+    term: D.web ? null : { titolo: 'Processi e sessioni', destra: '$ ps · claude', righe } }));
+  if (D.web) { $app.append(h('p', { class: 'note' }, D.web_nota || '')); document.getElementById('animbtn').addEventListener('click', () => { ANIM = !ANIM; try { localStorage.setItem('anim', ANIM ? '1' : '0'); } catch (e) {} applyAnim(); }); applyAnim(); return; }
+
+  $app.append(h('h2', { class: 'sec', id: 'panoramica', style: 'margin-top:6px' }, 'Panoramica'));
+  $app.append(h('div', { class: 'tiles' },
+    h('div', { class: 'tile' }, h('div', { class: 'v' }, lav.length, h('small', {}, '/ ' + sess.length)), h('div', { class: 'l' }, 'sessioni al lavoro adesso' + (lav.length ? ': ' + lav.map(s => s.titolo).join(', ') : ''))),
+    h('div', { class: 'tile' + (att.length ? ' warn' : '') }, h('div', { class: 'v' }, att.length), h('div', { class: 'l' }, 'sessioni che aspettano te')),
+    h('div', { class: 'tile' }, h('div', { class: 'v' }, scad ? scad.n : '–', scad ? h('small', {}, scad.n === 1 ? 'giorno' : 'giorni') : null), h('div', { class: 'l' }, scad ? 'alla prossima scadenza: ' + scad.p.titolo : 'nessuna scadenza impostata')),
+    h('div', { class: 'tile' }, h('div', { class: 'v' }, media != null ? pc(media) + '%' : '–'), h('div', { class: 'l' }, 'avanzamento medio · ' + tracc.length + (tracc.length === 1 ? ' progetto con traguardi' : ' progetti con traguardi'))),
+    (ag.claude.length || ag.windows.length) ? h('div', { class: 'tile' + (agProblemi ? ' warn' : '') }, h('div', { class: 'v' }, agAttivi + ' / ' + (ag.claude.length + ag.windows.length)),
+      h('div', { class: 'l' }, 'agenti e attività pianificate attivi (' + ag.claude.length + ' Claude, ' + ag.windows.length + ' Windows)' + (agProblemi ? ': ' + agProblemi + ' con problemi' : ''))) : null,
+    rcNote.tot ? h('div', { class: 'tile' + (rcNote.off ? ' warn' : '') }, h('div', { class: 'v' }, (rcNote.tot - rcNote.off) + ' / ' + rcNote.tot),
+      h('div', { class: 'l' }, 'sessioni con Remote Control attivo' + (rcNote.off ? ': mancano ' + rcNote.nomi.slice(0, 3).join(', ') + (rcNote.off > 3 ? '…' : '') : '') + ' (controllo ' + ago(D.rc_t) + ')')) : null,
+    h('div', { class: 'tile' }, h('div', { class: 'v' }, fresche + ' / ' + D.macchine.length), h('div', { class: 'l' }, 'macchine aggiornate: ' + D.macchine.map(m => m.nome + (m.fresca ? '' : ' (ferma da ' + ago(m.t).replace(' fa', '') + ')')).join(', ')))));
+
+  $app.append(h('h2', { class: 'sec', id: 'progetti' }, 'Progetti'));
+  if (tracc.length) { $app.append(h('div', { class: 'grp' }, 'Con avanzamento'));
+    $app.append(h('div', { class: 'pcards' }, tracc.sort((a, b) => (a.scadenza || '9') > (b.scadenza || '9') ? 1 : -1).map(schedaProgetto))); }
+  if (altri.length) { $app.append(h('div', { class: 'grp' }, 'Solo sessioni (senza traguardi)'));
+    $app.append(h('div', { class: 'pcards' }, altri.sort((a, b) => Math.max(...sess.filter(s => s.progetto === b.id).map(s => s.ultima)) - Math.max(...sess.filter(s => s.progetto === a.id).map(s => s.ultima))).map(schedaMini))); }
+
+  if (dettagli.length) {
+    $app.append(h('h2', { class: 'sec', id: 'dettaglio' }, 'Cruscotti di dettaglio'));
+    $app.append(h('div', { class: 'pcards' }, dettagli.map(schedaDettaglio)));
+  }
+
+  if (ag.claude.length || ag.windows.length) {
+    $app.append(h('h2', { class: 'sec', id: 'agenti' }, 'Agenti attivi', h('span', { class: 'sub', style: 'font-weight:400;margin-left:8px' }, agAttivi + ' su ' + (ag.claude.length + ag.windows.length) + ' attivi')));
+    if (ag.claude.length) { $app.append(h('div', { class: 'grp' }, 'Agenti Claude (attività pianificate dell\'app)'));
+      $app.append(h('div', { class: 'pcards' }, ag.claude.map(schedaAgente)));
+      if (ag.claude_t && (Date.now() / 1000 - ag.claude_t) > 3 * 3600) $app.append(h('p', { class: 'note' }, 'Registro degli agenti Claude aggiornato ' + ago(ag.claude_t) + ' (lo scrive il controllo orario del Remote Control).')); }
+    const ex = D.esecuzioni || [];
+    if (ex.length) $app.append(h('div', { class: 'grp' }, 'Esecuzioni recenti degli agenti (non sono sessioni di lavoro)'),
+      h('div', { class: 'card', style: 'padding:6px 10px' }, h('table', {}, h('tbody', {}, ex.slice(0, 10).map(e => h('tr', {},
+        h('td', { class: 'nw' }, e.attiva ? pill('run', '●', 'in corso') : pill('idle', '○', 'finita')), h('td', {}, e.agente), h('td', { class: 'nw' }, e.macchina), h('td', { class: 'nw', title: fmtDT(e.ultima) }, ago(e.ultima))))))));
+    if (ag.windows.length) { $app.append(h('div', { class: 'grp' }, 'Attività di Windows (workstation)'));
+      $app.append(h('div', { class: 'pcards' }, ag.windows.map(schedaWin))); }
+  }
+
+  $app.append(h('h2', { class: 'sec', id: 'sessioni' }, 'Sessioni Claude', h('span', { class: 'sub', style: 'font-weight:400;margin-left:8px' }, sess.length + ' su ' + D.macchine.length + (D.macchine.length === 1 ? ' macchina' : ' macchine'))));
+  $app.append(tabellaSessioni(sess));
+
+  $app.append(h('h2', { class: 'sec', id: 'attivita' }, 'Attività giorno per giorno'));
+  $app.append(h('div', { class: 'card' }, attivita(sess),
+    h('div', { class: 'legend' },
+      D.macchine.map(m => h('span', {}, h('span', { class: 'sw', style: 'background:var(--m' + (m.mc + 1) + ');border-color:var(--m' + (m.mc + 1) + ')' }), m.nome)),
+      h('span', {}, '● in lavoro'), h('span', {}, '▲ aspetta te'), h('span', {}, '✓ concluso'), h('span', {}, '○ ferma'),
+      h('span', {}, h('span', { class: 'scala' }, [0.25, 0.5, 0.75, 1].map(o => h('i', { style: 'opacity:' + o }))), ' più scuro = più risposte in quel giorno'))));
+
+  $app.append(h('p', { class: 'note' }, 'Le sessioni sono lette dai metadati che l\'app Claude salva su ogni macchina (titolo, cartella, stato); dalle conversazioni si prendono solo gli orari, mai il testo. ',
+    'Per aggiungere un progetto con traguardi, scadenza e un collegamento a un cruscotto di dettaglio: un file ', h('code', {}, 'progetti\\nome.json'), ' (istruzioni in ', h('code', {}, 'LEGGIMI.md'), ').'));
+  document.getElementById('animbtn').addEventListener('click', () => { ANIM = !ANIM; try { localStorage.setItem('anim', ANIM ? '1' : '0'); } catch (e) {} applyAnim(); });
+  applyAnim();
+}
+render();
+</script>
+</body>
+</html>

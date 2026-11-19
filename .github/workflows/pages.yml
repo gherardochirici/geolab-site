@@ -5,6 +5,8 @@ on:
     branches: [main]
   pull_request:
   workflow_dispatch:
+  schedule:
+    - cron: "0 6,12,18 * * *"  # 3 volte al giorno (UTC): aggiorna la pagina LIVE
 
 permissions:
   contents: read
@@ -26,6 +28,11 @@ jobs:
       - name: Automatic checks on the pull request
         if: github.event_name == 'pull_request'
         run: python -I tools/check_pr.py --base origin/${{ github.base_ref }}
+      - name: Update the LIVE page from the private link
+        if: github.event_name != 'pull_request'
+        env:
+          LIVE_DASHBOARD_URL: ${{ secrets.LIVE_DASHBOARD_URL }}
+        run: python -I tools/fetch_live.py
       - name: Build the site into docs/
         run: python -I build.py
       - uses: actions/upload-pages-artifact@v3

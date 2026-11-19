@@ -150,6 +150,7 @@ def page(title, body, description="", nav_extra="", path="/", image=OG_DEFAULT):
   <nav aria-label="Main">
     {nav}
     <a href="/pages/people/">People</a>
+    <a href="/live/">LIVE</a>
     <a href="/#contact">Contact</a>
   </nav>
 </header>
