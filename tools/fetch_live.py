@@ -1,4 +1,4 @@
-"""Scarica la pagina LIVE (dashboard) da un link riservato e la mette in static/live/index.html.
+"""Scarica la pagina LIVE (dashboard) da un link riservato e la mette in static/live/app/index.html.
 
 Uso (solo nel workflow, prima di build.py): LIVE_DASHBOARD_URL=<link> python -I tools/fetch_live.py
 Il link sta in un secret del repository, mai nel codice. Se la variabile manca, se il download
@@ -11,7 +11,7 @@ import urllib.parse
 import urllib.request
 from pathlib import Path
 
-TARGET = Path(__file__).resolve().parent.parent / "static" / "live" / "index.html"
+TARGET = Path(__file__).resolve().parent.parent / "static" / "live" / "app" / "index.html"
 TITLE = "<title>The geoLAB at work</title>"
 MIN_BYTES, MAX_BYTES = 100_000, 600_000
 FORBIDDEN = ("niccoli", "cruscotto_progetti", "hpo_repeat", "gherardo", "unifi", "gmail", "dropbox", "c:\\")
