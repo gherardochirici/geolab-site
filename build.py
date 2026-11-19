@@ -240,6 +240,30 @@ def list_items(items, limit=None):
     return f'<ul class="list">{rows}</ul>'
 
 
+LIVE_TITLE = "LIVE"
+LIVE_INTRO = ("A demonstration of the geoLAB at work: simulated activity of computing machines and studies, "
+              "shown as a live dashboard. The data are illustrative.")
+
+
+def live_texts():
+    """Titolo e frase introduttiva della pagina LIVE: si leggono dai meta `live-title` e `live-intro`
+    della dashboard (static/live/app/index.html), così si cambiano dalla dashboard senza toccare il sito.
+    Se il file o i meta mancano o sono vuoti si usa il testo di ripiego. Testo semplice, max 300 caratteri."""
+    try:
+        page_html = (STATIC / "live" / "app" / "index.html").read_text(encoding="utf-8")
+        head = page_html.split("</head>", 1)[0]  # i meta stanno nell'<head> (dopo il CSS)
+    except OSError:
+        return LIVE_TITLE, LIVE_INTRO
+    out = []
+    for name, fallback in (("live-title", LIVE_TITLE), ("live-intro", LIVE_INTRO)):
+        m = re.search(rf'<meta\s+name="{name}"\s+content="([^"]*)"', head, re.I)
+        text = " ".join(html.unescape(m.group(1)).split())[:300] if m else ""
+        out.append(text or fallback)
+    if italian_ratio(" ".join(out)) >= 0.5:
+        print("Attenzione: il testo della pagina LIVE sembra italiano (il sito è solo in inglese).")
+    return out[0], out[1]
+
+
 def build():
     # Svuota docs/ file per file: una cartella tenuta aperta da Dropbox o dall'anteprima non deve bloccare la build.
     if OUT.exists():
@@ -309,8 +333,8 @@ def build():
     # della stessa origine dentro la cornice del sito; lo script ne adatta l'altezza al contenuto.
     live_body = """
 <section class="live">
-  <h1 class="section-title">LIVE</h1>
-  <p class="sub">A demonstration of the geoLAB at work: simulated activity of computing machines and studies, shown as a live dashboard. The data are illustrative.</p>
+  <h1 class="section-title">__LIVE_TITLE__</h1>
+  <p class="sub">__LIVE_INTRO__</p>
   <div class="live-frame">
     <iframe id="live-app" src="/live/app/" title="The geoLAB at work: live dashboard" loading="eager"></iframe>
   </div>
@@ -332,8 +356,9 @@ def build():
 })();
 </script>
 """
-    write("live/index.html", wrap(f"LIVE | {SITE['name']}", live_body,
-          "A demonstration of the geoLAB at work: a live dashboard of simulated computing activity.", "/live/"))
+    live_title, live_intro = live_texts()
+    live_body = live_body.replace("__LIVE_TITLE__", html.escape(live_title)).replace("__LIVE_INTRO__", html.escape(live_intro))
+    write("live/index.html", wrap(f"LIVE | {SITE['name']}", live_body, live_intro, "/live/"))
     if archive_news:
         body = (f'<section><h1 class="section-title">News archive</h1><p class="sub">News published before {ARCHIVE_BEFORE[:4]}. '
                 f'<a href="/news/">Back to recent news</a></p>{list_items(archive_news)}</section>')
