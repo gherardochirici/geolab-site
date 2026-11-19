@@ -150,7 +150,7 @@ def page(title, body, description="", nav_extra="", path="/", image=OG_DEFAULT):
   <nav aria-label="Main">
     {nav}
     <a href="/pages/people/">People</a>
-    <a href="/live/">LIVE</a>
+    <a href="/live/"{' aria-current="page"' if path.startswith("/live/") else ""}>LIVE</a>
     <a href="/#contact">Contact</a>
   </nav>
 </header>
@@ -305,6 +305,35 @@ def build():
         else:
             body = f'<section><h1 class="section-title">{label}</h1>{list_items(data[name])}</section>'
         write(f"{name}/index.html", wrap(f"{label} | {SITE['name']}", body, path=f"/{name}/"))
+    # Pagina LIVE: la dashboard (static/live/app/index.html, scaricata da tools/fetch_live.py) sta in un iframe
+    # della stessa origine dentro la cornice del sito; lo script ne adatta l'altezza al contenuto.
+    live_body = """
+<section class="live">
+  <h1 class="section-title">LIVE</h1>
+  <p class="sub">A demonstration of the geoLAB at work: simulated activity of computing machines and studies, shown as a live dashboard. The data are illustrative.</p>
+  <div class="live-frame">
+    <iframe id="live-app" src="/live/app/" title="The geoLAB at work: live dashboard" loading="eager"></iframe>
+  </div>
+  <noscript><p class="note">JavaScript is needed to show the dashboard inside this page. <a href="/live/app/">Open the dashboard on its own page</a>.</p></noscript>
+</section>
+<script>
+(function () {
+  var frame = document.getElementById("live-app");
+  function fit() {
+    try {
+      var doc = frame.contentDocument;
+      var h = doc && doc.documentElement ? doc.documentElement.scrollHeight : 0;
+      if (h > 200 && Math.abs(h - frame.offsetHeight) > 2) { frame.style.height = h + "px"; }
+    } catch (e) { /* stessa origine: non dovrebbe succedere */ }
+  }
+  frame.addEventListener("load", function () { fit(); setTimeout(fit, 500); });
+  window.addEventListener("resize", fit);
+  setInterval(fit, 2500);
+})();
+</script>
+"""
+    write("live/index.html", wrap(f"LIVE | {SITE['name']}", live_body,
+          "A demonstration of the geoLAB at work: a live dashboard of simulated computing activity.", "/live/"))
     if archive_news:
         body = (f'<section><h1 class="section-title">News archive</h1><p class="sub">News published before {ARCHIVE_BEFORE[:4]}. '
                 f'<a href="/news/">Back to recent news</a></p>{list_items(archive_news)}</section>')
