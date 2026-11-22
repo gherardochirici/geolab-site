@@ -1,14 +1,14 @@
 ---
 title: Green space exposure and mortality in the Florentine plain
 date: 2026-11-11
-subtitle: New open access article in Stochastic Environmental Research and Risk Assessment
+subtitle: Open access article in Stochastic Environmental Research and Risk Assessment, published in April 2026
 categories: Publications
 image: /media/2026/11/florentine-plain-s1-card.jpg
 alt: Map of the Florentine plain showing preventable deaths per 10,000 inhabitants by census tract if every tract reached an NDVI of at least 0.5. The highest rates are in the urban centre of Florence, and tracts already above the threshold are shown in green.
 social_image: /media/2026/11/florentine-plain-s1-card.jpg
 ---
 
-Increasing urban green space is a preventive public health strategy. A new open access article in *Stochastic Environmental Research and Risk Assessment* shows that sufficient exposure to residential green space in the Florentine plain (Tuscany, Italy), measured with the satellite index NDVI within 300 m of homes, could prevent up to several hundred deaths per year among adults over 35 and reduce social and health inequalities. geoLAB is among the authors of the study.
+Increasing urban green space is a preventive public health strategy. An open access article published in April 2026 in *Stochastic Environmental Research and Risk Assessment* shows that sufficient exposure to residential green space in the Florentine plain (Tuscany, Italy), measured with the satellite index NDVI within 300 m of homes, could prevent up to several hundred deaths per year among adults over 35 and reduce social and health inequalities. geoLAB is among the authors of the study.
 
 ## Study area and data
 
@@ -28,7 +28,7 @@ The authors compared five hypothetical scenarios and estimated the deaths that e
 
 ![Four maps of the Florentine plain, one per scenario from S1 to S4, showing preventable deaths per 10,000 inhabitants by census tract. In scenarios S1 and S2 the highest rates are in the urban centre of Florence.](/media/2026/11/florentine-plain-scenarios-s1-s4.jpg)
 
-Preventable deaths per 10,000 inhabitants by census tract in scenarios S1 (NDVI of at least 0.5), S2 (NDVI of at least 0.7), S3 (absolute increase of 0.1) and S4 (relative increase of 20%). Source: Baccini et al. (2026).
+Preventable deaths per 10,000 inhabitants by census tract in scenarios S1 (NDVI of at least 0.5), S2 (NDVI of at least 0.7), S3 (absolute increase of 0.1) and S4 (relative increase of 20%). Source: Baccini et al. (2026), [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
 
 ## Uncertainty
 
@@ -47,3 +47,5 @@ The largest numbers of preventable deaths are in Florence and Sesto Fiorentino, 
 ## Reference
 
 Baccini M., Burbui G., Nuvolone D., Borghi C., Lachi A., Mancuso S., Chirici G. (2026). Green space exposure and mortality in the Florentine plain: preventable deaths at the census tract level and uncertainty analysis. *Stochastic Environmental Research and Risk Assessment*, 40:99. [https://doi.org/10.1007/s00477-026-03217-y](https://doi.org/10.1007/s00477-026-03217-y)
+
+The figures on this page are adapted from the article, which is licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). The maps were cropped and rearranged.
