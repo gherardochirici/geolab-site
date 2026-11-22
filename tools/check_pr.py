@@ -18,6 +18,9 @@ from langcheck import italian_ratio  # noqa: E402
 ROOT = Path(__file__).resolve().parent.parent
 ALLOWED_PREFIXES = ("content/", "static/", "docs/media/", "social/")
 INFRA_PREFIXES = (".github/", "tools/", "build.py", "CLAUDE.md", "README.md", "redirects.json", ".gitignore")
+_RANGES = ((0x1F000, 0x1FAFF), (0x2600, 0x27BF), (0x2B50, 0x2B50), (0x2B55, 0x2B55), (0x2B1B, 0x2B1C))  # pittogrammi e simboli
+EMOJI = re.compile("[" + "".join(f"{chr(a)}-{chr(b)}" for a, b in _RANGES) + "]")
+MAX_EMOJI = 10
 EMAIL = re.compile(r"[\w.+-]+@[\w-]+(?:\.[\w-]+)+")
 PHONE = re.compile(r"(?<!\d)(?:\+\d{1,3}[\s.-]?)?(?:\d[\s.-]?){9,12}\d(?!\d)")
 SENSITIVE = re.compile(r"\b(budget|embargo|confidential|not (?:yet )?public|draft deliverable|internal use)\b", re.I)
@@ -143,6 +146,8 @@ def check_social(path):
         if target_meta.get("emblem") == "yes" and target_meta.get("funding") and target_meta["funding"] not in post:
             report("error", path, f"The linked page is EU-funded: the {title} post must include the full funding text, unshortened.")
         hashtags = len(re.findall(r"(?<!\w)#\w+", post))
+        if len(EMOJI.findall(post)) > MAX_EMOJI:
+            report("error", path, f"The {title} post has {len(EMOJI.findall(post))} icons (emoji): the limit is {MAX_EMOJI}.")
         if EMAIL.search(post):
             report("error", path, f"Do not publish email addresses in the {title} post.")
         if SENSITIVE.search(post):
